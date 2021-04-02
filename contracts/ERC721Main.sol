@@ -2,19 +2,29 @@
 
 pragma solidity ^0.8.0;
 
-import "./openzeppelin/ERC721Burnable.sol";
-import "./openzeppelin/ERC721Enumerable.sol";
-import "./openzeppelin/ERC721URIStorage.sol";
+import "./openzeppelin/ERC721/ERC721Burnable.sol";
+import "./openzeppelin/ERC721/ERC721Enumerable.sol";
+import "./openzeppelin/ERC721/ERC721URIStorage.sol";
 import "openzeppelin-solidity/contracts/access/Ownable.sol";
 
 contract ERC721Main is ERC721Burnable, ERC721Enumerable, ERC721URIStorage, Ownable {
     string public baseURI;
 
-    constructor() {}
+    address public factory;
 
+    constructor() {
+        factory = _msgSender();
+    }
+
+    bool private isInited = false;
     function init(string memory _name, string memory _symbol, string memory baseURI_) external onlyOwner {
+        require(
+            isInited == false,
+            "ERC721Main: Already initiated"
+        );
         ERC721.init(_name, _symbol);
         baseURI = baseURI_;
+        isInited = true;
     }
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override(ERC721, ERC721Enumerable) {
