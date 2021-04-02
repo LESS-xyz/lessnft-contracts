@@ -1,0 +1,27 @@
+{
+  "name": "dds-contracts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "chai": "^4.3.4",
+    "chai-arrays": "^2.2.0",
+    "chai-bn": "^0.2.1",
+    "dotenv": "^8.2.0",
+    "openzeppelin-contracts": "^4.0.0",
+    "openzeppelin-solidity": "^4.0.0",
+    "openzeppelin-test-helpers": "^0.5.1",
+    "truffle-contract-size": "^2.0.1",
+    "truffle-hdwallet-provider": "^1.0.17",
+    "truffle-plugin-verify": "^0.5.7"
+  }
+}
