@@ -43,7 +43,7 @@ module.exports = {
         kovan: {
             provider: () => new HDWalletProvider(MNEMONIC, "https://kovan.infura.io/v3/" + INFURA_ID_PROJECT),
             network_id: 42,
-            confirmations: 2,
+            confirmations: 1,
             gas: DEPLOY_GAS_LIMIT,
             skipDryRun: true
         },
