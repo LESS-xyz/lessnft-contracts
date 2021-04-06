@@ -11,7 +11,7 @@ import "openzeppelin-solidity/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 
 contract Vault is AccessControl, IERC721Receiver, IERC1155Receiver {
-    bytes32 public constant MANAGER_ROLE = keccak256("Manager");
+    bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
 
     event Erc721Income(address who, address token, uint256 id);
     event Erc721Outcome(

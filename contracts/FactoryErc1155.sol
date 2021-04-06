@@ -2,31 +2,40 @@
 
 pragma solidity ^0.8.0;
 
-import "openzeppelin-solidity/contracts/access/Ownable.sol";
+import "openzeppelin-solidity/contracts/access/AccessControl.sol";
+import "openzeppelin-solidity/contracts/utils/cryptography/ECDSA.sol";
 
 import "./ERC1155Main.sol";
 
-contract FactoryErc1155 is Ownable {
-    event ERC1155Made(
-        address newToken,
-        string name,
-        string symbol,
-        address newOwner
-    );
+contract FactoryErc1155 is AccessControl {
+    bytes32 public SIGNER_ROLE = keccak256("SIGNER_ROLE");
 
-    constructor() {}
+    event ERC1155Made(address newToken, address indexed signer);
 
-    function makeERC1155(string memory name, string memory symbol, string memory uri, address owner) external {
-        ERC1155Main newAddress = new ERC1155Main();
+    constructor() {
+        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
+        _setupRole(SIGNER_ROLE, _msgSender());
+    }
 
-        newAddress.init(name, symbol, uri);
-        newAddress.transferOwnership(owner);
+    function makeERC1155(
+        string memory uri,
+        address signer,
+        bytes calldata signature
+    ) external {
+        _verifySigner(signer, signature);
+        ERC1155Main newAddress = new ERC1155Main(uri, signer);
 
-        emit ERC1155Made(
-            address(newAddress),
-            name,
-            symbol,
-            owner
+        emit ERC1155Made(address(newAddress), signer);
+    }
+
+    function _verifySigner(
+        address signer,
+        bytes calldata signature
+    ) private view {
+        address messageSigner = ECDSA.recover(keccak256(abi.encodePacked(signer)), signature);
+        require(
+            hasRole(SIGNER_ROLE, messageSigner),
+            "FactoryErc1155: Signer should sign transaction"
         );
     }
 }

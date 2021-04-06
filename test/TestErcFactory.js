@@ -8,6 +8,7 @@ const assertArrays = require('chai-arrays');
 const { web3 } = require("openzeppelin-test-helpers/src/setup");
 chai.use(assertArrays);
 chai.use(require("chai-bn")(BN));
+const EthCrypto = require("eth-crypto");
 
 require('dotenv').config();
 const {
@@ -53,10 +54,10 @@ const ERC1155Main = artifacts.require('ERC1155Main');
 contract(
     'Asset-test',
     ([
-        Factory721Owner,
-        Factory1155Owner,
-        Nft721OwnerOwner,
-        Nft1155OwnerOwner,
+        Factory721Deployer,
+        Factory1155Deployer,
+        Nft721Deployer,
+        Nft1155Deployer,
         user1,
         user2
     ]) => {
@@ -65,55 +66,93 @@ contract(
         let ERC721MainInst;
         let ERC1155MainInst;
 
+        let Factory721Signer;
+        let Factory1155Signer;
+        let Nft721Signer;
+        let Nft1155Signer;
+
         beforeEach(async () => {
             // Init contracts
-
             FactoryErc721Inst = await FactoryErc721.new(
-                { from: Factory721Owner }
+                { from: Factory721Deployer }
             );
+            Factory721Signer = EthCrypto.createIdentity();
+            await FactoryErc721Inst.grantRole(await FactoryErc721Inst.SIGNER_ROLE(), Factory721Signer.address, { from: Factory721Deployer });
 
             FactoryErc1155Inst = await FactoryErc1155.new(
-                { from: Factory1155Owner }
+                { from: Factory1155Deployer }
+            );
+            Factory1155Signer = EthCrypto.createIdentity();
+            await FactoryErc1155Inst.grantRole(await FactoryErc1155Inst.SIGNER_ROLE(), Factory1155Signer.address, { from: Factory1155Deployer });
+
+            Nft721Signer = EthCrypto.createIdentity();
+            Nft1155Signer = EthCrypto.createIdentity();
+        })
+
+        it("#0 Deploy ERC721 token", async () => {
+            const message = EthCrypto.hash.keccak256([
+                { type: "address", value: Nft721Signer.address }
+            ]);
+            const signature = EthCrypto.sign(Factory721Signer.privateKey, message);
+
+            await expectRevert(
+                FactoryErc721Inst.makeERC721(
+                    NFT_721_NAME,
+                    NFT_721_SYMBOL,
+                    NFT_721_BASE_URI,
+                    user1,
+                    signature,
+                    { from: user1 }
+                ),
+                "FactoryErc721: Signer should sign transaction"
             );
 
             let tx = await FactoryErc721Inst.makeERC721(
                 NFT_721_NAME,
                 NFT_721_SYMBOL,
                 NFT_721_BASE_URI,
-                Nft721OwnerOwner,
+                Nft721Signer.address,
+                signature,
                 { from: user1 }
             );
             ERC721MainInst = tx.logs[2].args.newToken;
-            //console.log("tx.logs[2].args.newToken =", tx.logs[2].args.newToken);
             assert(ERC721MainInst != ZERO_ADDRESS);
             ERC721MainInst = await ERC721Main.at(ERC721MainInst);
 
-            tx = await FactoryErc1155Inst.makeERC1155(
-                NFT_1155_NAME,
-                NFT_1155_SYMBOL,
-                NFT_1155_BASE_URI,
-                Nft1155OwnerOwner,
-                { from: user2 }
-            );
-            ERC1155MainInst = tx.logs[2].args.newToken;
-            //console.log("tx.logs[2].args.newToken =", tx.logs[2].args.newToken);
-            assert(ERC1155MainInst != ZERO_ADDRESS);
-            ERC1155MainInst = await ERC1155Main.at(ERC1155MainInst);
-        })
-
-        it("#0 Deploy test", async () => {
-            expect(await FactoryErc721Inst.owner()).to.be.equals(Factory721Owner);
-            expect(await FactoryErc1155Inst.owner()).to.be.equals(Factory1155Owner);
-
             expect(await ERC721MainInst.name()).to.be.equals(NFT_721_NAME);
             expect(await ERC721MainInst.symbol()).to.be.equals(NFT_721_SYMBOL);
-            expect(await ERC721MainInst.owner()).to.be.equals(Nft721OwnerOwner);
             expect(await ERC721MainInst.baseURI()).to.be.equals(NFT_721_BASE_URI);
+            expect(await ERC721MainInst.factory()).to.be.equals(FactoryErc721Inst.address);
+        })
 
-            expect(await ERC1155MainInst.name()).to.be.equals(NFT_1155_NAME);
-            expect(await ERC1155MainInst.symbol()).to.be.equals(NFT_1155_SYMBOL);
-            expect(await ERC1155MainInst.owner()).to.be.equals(Nft1155OwnerOwner);
+        it("#1 Deploy ERC1155 token", async () => {
+            const message = EthCrypto.hash.keccak256([
+                { type: "address", value: Nft1155Signer.address }
+            ]);
+            const signature = EthCrypto.sign(Factory1155Signer.privateKey, message);
+
+            await expectRevert(
+                FactoryErc1155Inst.makeERC1155(
+                    NFT_1155_BASE_URI,
+                    user1,
+                    signature,
+                    { from: user1 }
+                ),
+                "FactoryErc1155: Signer should sign transaction"
+            );
+
+            let tx = await FactoryErc1155Inst.makeERC1155(
+                NFT_1155_BASE_URI,
+                Nft1155Signer.address,
+                signature,
+                { from: user1 }
+            );
+            ERC1155MainInst = tx.logs[2].args.newToken;
+            assert(ERC1155MainInst != ZERO_ADDRESS);
+            ERC1155MainInst = await ERC1155Main.at(ERC1155MainInst);
+
             expect(await ERC1155MainInst.uri(ZERO)).to.be.equals(NFT_1155_BASE_URI);
+            expect(await ERC1155MainInst.factory()).to.be.equals(FactoryErc1155Inst.address);
         })
     }
 )

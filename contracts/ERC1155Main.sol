@@ -2,44 +2,61 @@
 
 pragma solidity ^0.8.0;
 
-import "./openzeppelin/ERC1155/ERC1155Burnable.sol";
-import "openzeppelin-solidity/contracts/access/Ownable.sol";
+import "openzeppelin-solidity/contracts/token/ERC1155/extensions/ERC1155Burnable.sol";
+import "openzeppelin-solidity/contracts/access/AccessControl.sol";
+import "openzeppelin-solidity/contracts/utils/cryptography/ECDSA.sol";
 
-contract ERC1155Main is ERC1155Burnable, Ownable {
+contract ERC1155Main is ERC1155Burnable, AccessControl {
+    bytes32 public SIGNER_ROLE = keccak256("SIGNER_ROLE");
+
     address public factory;
 
-    string private _name;
-    string private _symbol;
-
-    constructor() {
+    constructor(string memory uri_, address signer) ERC1155(uri_) {
         factory = _msgSender();
+        _setupRole(DEFAULT_ADMIN_ROLE, signer);
+        _setupRole(SIGNER_ROLE, signer);
     }
 
-    bool private isInited = false;
-    function init(string memory name_, string memory symbol_, string memory uri_) external onlyOwner {
+    function mint(
+        uint256 id,
+        uint256 amount,
+        bytes calldata signature
+    ) external {
+        _verifySigner(id, amount, signature);
+        _mint(_msgSender(), id, amount, "");
+    }
+
+    function mint(
+        uint256 id,
+        uint256 amount,
+        bytes memory data,
+        bytes calldata signature
+    ) external {
+        _verifySigner(id, amount, signature);
+        _mint(_msgSender(), id, amount, data);
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(AccessControl, ERC1155)
+        returns (bool)
+    {
+        return
+            ERC1155.supportsInterface(interfaceId) ||
+            AccessControl.supportsInterface(interfaceId);
+    }
+
+    function _verifySigner(
+        uint256 id,
+        uint256 amount,
+        bytes calldata signature
+    ) private view {
+        address signer = ECDSA.recover(keccak256(abi.encodePacked(this, id, amount)), signature);
         require(
-            isInited == false,
-            "ERC1155Main: Already initiated"
+            hasRole(SIGNER_ROLE, signer),
+            "ERC1155Main: Signer should sign transaction"
         );
-        _name = name_;
-        _symbol = symbol_;
-        _setURI(uri_);
-        isInited = true;
-    }
-
-    function mint(address account, uint256 id, uint256 amount) external onlyOwner {
-        _mint(account, id, amount, "");
-    }
-
-    function mint(address account, uint256 id, uint256 amount, bytes memory data) external onlyOwner {
-        _mint(account, id, amount, data);
-    }
-
-    function name() external view returns(string memory) {
-        return _name;
-    }
-
-    function symbol() external view returns(string memory) {
-        return _symbol;
     }
 }
