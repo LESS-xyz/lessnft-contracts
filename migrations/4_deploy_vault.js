@@ -19,9 +19,9 @@ module.exports = async function (deployer, network) {
     if (network == "test" || network == "development")
         return;
 
-    await deployer.deploy(
+    /* await deployer.deploy(
         Vault
     );
     let VaultInst = await Vault.deployed();
-    console.log("Vault =", VaultInst.address);
+    console.log("Vault =", VaultInst.address); */
 };
