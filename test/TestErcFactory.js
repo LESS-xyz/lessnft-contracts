@@ -71,17 +71,21 @@ contract(
         let Nft721Signer;
         let Nft1155Signer;
 
+        let SIGNER_ROLE;
+
         beforeEach(async () => {
             // Init contracts
             FactoryErc721Inst = await FactoryErc721.new(
                 { from: Factory721Deployer }
             );
+            SIGNER_ROLE = await FactoryErc721Inst.SIGNER_ROLE();
             Factory721Signer = EthCrypto.createIdentity();
             await FactoryErc721Inst.grantRole(await FactoryErc721Inst.SIGNER_ROLE(), Factory721Signer.address, { from: Factory721Deployer });
 
             FactoryErc1155Inst = await FactoryErc1155.new(
                 { from: Factory1155Deployer }
             );
+            expect(await FactoryErc1155Inst.SIGNER_ROLE()).to.be.equals(SIGNER_ROLE);
             Factory1155Signer = EthCrypto.createIdentity();
             await FactoryErc1155Inst.grantRole(await FactoryErc1155Inst.SIGNER_ROLE(), Factory1155Signer.address, { from: Factory1155Deployer });
 
@@ -123,6 +127,12 @@ contract(
             expect(await ERC721MainInst.symbol()).to.be.equals(NFT_721_SYMBOL);
             expect(await ERC721MainInst.baseURI()).to.be.equals(NFT_721_BASE_URI);
             expect(await ERC721MainInst.factory()).to.be.equals(FactoryErc721Inst.address);
+
+            expect(await ERC721MainInst.SIGNER_ROLE()).to.be.equals(SIGNER_ROLE);
+
+            expect(await ERC721MainInst.hasRole(SIGNER_ROLE, Nft721Signer.address)).to.be.equals(true);
+            expect(await ERC721MainInst.hasRole(SIGNER_ROLE, user1)).to.be.equals(false);
+            expect(await ERC721MainInst.hasRole(SIGNER_ROLE, FactoryErc721Inst.address)).to.be.equals(false);
         })
 
         it("#1 Deploy ERC1155 token", async () => {
@@ -153,6 +163,117 @@ contract(
 
             expect(await ERC1155MainInst.uri(ZERO)).to.be.equals(NFT_1155_BASE_URI);
             expect(await ERC1155MainInst.factory()).to.be.equals(FactoryErc1155Inst.address);
+
+            expect(await ERC1155MainInst.SIGNER_ROLE()).to.be.equals(SIGNER_ROLE);
+
+            expect(await ERC1155MainInst.hasRole(SIGNER_ROLE, Nft1155Signer.address)).to.be.equals(true);
+            expect(await ERC1155MainInst.hasRole(SIGNER_ROLE, user1)).to.be.equals(false);
+            expect(await ERC1155MainInst.hasRole(SIGNER_ROLE, FactoryErc1155Inst.address)).to.be.equals(false);
+        })
+
+        it("#2 Test ERC721 token", async () => {
+            let message = EthCrypto.hash.keccak256([
+                { type: "address", value: Nft721Signer.address }
+            ]);
+            let signature = EthCrypto.sign(Factory721Signer.privateKey, message);
+
+            let tx = await FactoryErc721Inst.makeERC721(
+                NFT_721_NAME,
+                NFT_721_SYMBOL,
+                NFT_721_BASE_URI,
+                Nft721Signer.address,
+                signature,
+                { from: user1 }
+            );
+            ERC721MainInst = tx.logs[2].args.newToken;
+            assert(ERC721MainInst != ZERO_ADDRESS);
+            ERC721MainInst = await ERC721Main.at(ERC721MainInst);
+
+            message = EthCrypto.hash.keccak256([
+                { type: "address", value: ERC721MainInst.address },
+                { type: "uint256", value: ZERO.toString() }
+            ]);
+            signature = EthCrypto.sign(Nft721Signer.privateKey, message);
+
+            await expectRevert(
+                ERC721MainInst.mint(ONE, NFT_721_BASE_URI, signature, { from: user1 }),
+                "ERC721Main: Signer should sign transaction"
+            );
+            await ERC721MainInst.mint(ZERO, NFT_721_BASE_URI, signature, { from: user1 });
+
+            expect(await ERC721MainInst.balanceOf(user1)).to.be.bignumber.that.equals(ONE);
+            expect(await ERC721MainInst.ownerOf(ZERO)).to.be.equals(user1);
+
+            let fakeSigner = EthCrypto.createIdentity();
+            message = EthCrypto.hash.keccak256([
+                { type: "address", value: ERC721MainInst.address },
+                { type: "uint256", value: ONE.toString() }
+            ]);
+            signature = EthCrypto.sign(fakeSigner.privateKey, message);
+
+            await expectRevert(
+                ERC721MainInst.mint(ONE, NFT_721_BASE_URI, signature, { from: user1 }),
+                "ERC721Main: Signer should sign transaction"
+            );
+        })
+
+        it("#3 Test ERC1155 token", async () => {
+            let message = EthCrypto.hash.keccak256([
+                { type: "address", value: Nft1155Signer.address }
+            ]);
+            let signature = EthCrypto.sign(Factory1155Signer.privateKey, message);
+
+            await expectRevert(
+                FactoryErc1155Inst.makeERC1155(
+                    NFT_1155_BASE_URI,
+                    user1,
+                    signature,
+                    { from: user1 }
+                ),
+                "FactoryErc1155: Signer should sign transaction"
+            );
+
+            let tx = await FactoryErc1155Inst.makeERC1155(
+                NFT_1155_BASE_URI,
+                Nft1155Signer.address,
+                signature,
+                { from: user1 }
+            );
+            ERC1155MainInst = tx.logs[2].args.newToken;
+            assert(ERC1155MainInst != ZERO_ADDRESS);
+            ERC1155MainInst = await ERC1155Main.at(ERC1155MainInst);
+
+            message = EthCrypto.hash.keccak256([
+                { type: "address", value: ERC1155MainInst.address },
+                { type: "uint256", value: ZERO.toString() },
+                { type: "uint256", value: TEN.toString() }
+            ]);
+            signature = EthCrypto.sign(Nft1155Signer.privateKey, message);
+
+            await expectRevert(
+                ERC1155MainInst.mint(ONE, TEN, signature, { from: user1 }),
+                "ERC1155Main: Signer should sign transaction"
+            );
+            await expectRevert(
+                ERC1155MainInst.mint(ZERO, ONE, signature, { from: user1 }),
+                "ERC1155Main: Signer should sign transaction"
+            );
+            await ERC1155MainInst.mint(ZERO, TEN, signature, { from: user1 });
+
+            expect(await ERC1155MainInst.balanceOf(user1, ZERO)).to.be.bignumber.that.equals(TEN);
+
+            let fakeSigner = EthCrypto.createIdentity();
+            message = EthCrypto.hash.keccak256([
+                { type: "address", value: ERC1155MainInst.address },
+                { type: "uint256", value: ONE.toString() },
+                { type: "uint256", value: TEN.toString() }
+            ]);
+            signature = EthCrypto.sign(fakeSigner.privateKey, message);
+
+            await expectRevert(
+                ERC1155MainInst.mint(ONE, TEN, signature, { from: user1 }),
+                "ERC1155Main: Signer should sign transaction"
+            );
         })
     }
 )

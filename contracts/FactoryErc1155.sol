@@ -28,11 +28,12 @@ contract FactoryErc1155 is AccessControl {
         emit ERC1155Made(address(newAddress), signer);
     }
 
-    function _verifySigner(
-        address signer,
-        bytes calldata signature
-    ) private view {
-        address messageSigner = ECDSA.recover(keccak256(abi.encodePacked(signer)), signature);
+    function _verifySigner(address signer, bytes calldata signature)
+        private
+        view
+    {
+        address messageSigner =
+            ECDSA.recover(keccak256(abi.encodePacked(signer)), signature);
         require(
             hasRole(SIGNER_ROLE, messageSigner),
             "FactoryErc1155: Signer should sign transaction"

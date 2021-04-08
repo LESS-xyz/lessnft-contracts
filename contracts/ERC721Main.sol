@@ -86,11 +86,9 @@ contract ERC721Main is
         return baseURI;
     }
 
-    function _verifySigner(
-        uint256 id,
-        bytes calldata signature
-    ) private view {
-        address signer = ECDSA.recover(keccak256(abi.encodePacked(this, id)), signature);
+    function _verifySigner(uint256 id, bytes calldata signature) private view {
+        address signer =
+            ECDSA.recover(keccak256(abi.encodePacked(this, id)), signature);
         require(
             hasRole(SIGNER_ROLE, signer),
             "ERC721Main: Signer should sign transaction"

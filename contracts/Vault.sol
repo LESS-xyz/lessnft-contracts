@@ -39,11 +39,7 @@ contract Vault is AccessControl, IERC721Receiver, IERC1155Receiver {
     );
 
     event EthIncome(address who, uint256 amount);
-    event EthOutcome(
-        address who,
-        address manager,
-        uint256 amount
-    );
+    event EthOutcome(address who, address manager, uint256 amount);
 
     modifier onlyManager {
         require(
@@ -124,10 +120,10 @@ contract Vault is AccessControl, IERC721Receiver, IERC1155Receiver {
         emit Erc20Outcome(who, manager, address(token), amount);
     }
 
-    function ethWithdraw(
-        address payable who,
-        uint256 amount
-    ) external onlyManager {
+    function ethWithdraw(address payable who, uint256 amount)
+        external
+        onlyManager
+    {
         who.transfer(amount);
 
         emit EthOutcome(who, _msgSender(), amount);
@@ -138,7 +134,7 @@ contract Vault is AccessControl, IERC721Receiver, IERC1155Receiver {
         address,
         uint256,
         bytes calldata
-    ) external override pure returns (bytes4) {
+    ) external pure override returns (bytes4) {
         return IERC721Receiver.onERC721Received.selector;
     }
 
@@ -148,7 +144,7 @@ contract Vault is AccessControl, IERC721Receiver, IERC1155Receiver {
         uint256,
         uint256,
         bytes calldata
-    ) external override pure returns (bytes4) {
+    ) external pure override returns (bytes4) {
         return IERC1155Receiver.onERC1155Received.selector;
     }
 
@@ -158,7 +154,7 @@ contract Vault is AccessControl, IERC721Receiver, IERC1155Receiver {
         uint256[] calldata,
         uint256[] calldata,
         bytes calldata
-    ) external override pure returns (bytes4) {
+    ) external pure override returns (bytes4) {
         return IERC1155Receiver.onERC1155BatchReceived.selector;
     }
 }

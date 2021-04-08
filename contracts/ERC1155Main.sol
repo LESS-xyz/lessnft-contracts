@@ -53,7 +53,11 @@ contract ERC1155Main is ERC1155Burnable, AccessControl {
         uint256 amount,
         bytes calldata signature
     ) private view {
-        address signer = ECDSA.recover(keccak256(abi.encodePacked(this, id, amount)), signature);
+        address signer =
+            ECDSA.recover(
+                keccak256(abi.encodePacked(this, id, amount)),
+                signature
+            );
         require(
             hasRole(SIGNER_ROLE, signer),
             "ERC1155Main: Signer should sign transaction"
