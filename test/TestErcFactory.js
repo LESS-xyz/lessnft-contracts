@@ -333,7 +333,7 @@ contract(
                 { type: "uint256", value: ZERO.toString() },
                 { type: "uint256", value: ZERO.toString() },
                 { type: "address", value: ERC20TestInst.address },
-                { type: "uint256", value: ZERO.toString() },
+                //{ type: "uint256", value: ZERO.toString() },
                 { type: "uint256", value: ONE_TOKEN.toString() },
                 { type: "address[]", value: feeAddresses },
                 { type: "uint256[]", value: feeAmount },
@@ -348,7 +348,7 @@ contract(
                     invalidOrderId,
                     user1,
                     { tokenAddress: ERC721MainInst.address, id: ZERO, amount: ZERO },
-                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN },
+                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
                     feeAddresses,
                     feeAmount,
                     signature,
@@ -361,7 +361,7 @@ contract(
                     orderId,
                     user2,
                     { tokenAddress: ERC721MainInst.address, id: ZERO, amount: ZERO },
-                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN },
+                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
                     feeAddresses,
                     feeAmount,
                     signature,
@@ -374,7 +374,7 @@ contract(
                     orderId,
                     user1,
                     { tokenAddress: ZERO_ADDRESS, id: ZERO, amount: ZERO },
-                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN },
+                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
                     feeAddresses,
                     feeAmount,
                     signature,
@@ -386,8 +386,8 @@ contract(
                 ExchangeInst.makeExchangeERC721(
                     orderId,
                     user1,
-                    { tokenAddress: ERC721MainInst.address, id: ONE, amount: ZERO },
-                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN },
+                    { tokenAddress: ERC721MainInst.address, id: ONE.toString(), amount: ZERO },
+                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
                     feeAddresses,
                     feeAmount,
                     signature,
@@ -399,8 +399,21 @@ contract(
                 ExchangeInst.makeExchangeERC721(
                     orderId,
                     user1,
+                    { tokenAddress: ERC721MainInst.address, id: ZERO, amount: ONE.toString() },
+                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
+                    feeAddresses,
+                    feeAmount,
+                    signature,
+                    { from: user2 }
+                ),
+                "Exchange: Wrong tokenToBuy"
+            );
+            await expectRevert(
+                ExchangeInst.makeExchangeERC721(
+                    orderId,
+                    user1,
                     { tokenAddress: ERC721MainInst.address, id: ZERO, amount: ZERO },
-                    { tokenAddress: ZERO_ADDRESS, id: ZERO, amount: ONE_TOKEN },
+                    { tokenAddress: ZERO_ADDRESS, id: ZERO, amount: ONE_TOKEN.toString() },
                     feeAddresses,
                     feeAmount,
                     signature,
@@ -408,13 +421,25 @@ contract(
                 ),
                 "Exchange: Wrong tokenToSell"
             );
-
             await expectRevert(
                 ExchangeInst.makeExchangeERC721(
                     orderId,
                     user1,
                     { tokenAddress: ERC721MainInst.address, id: ZERO, amount: ZERO },
-                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.div(TWO) },
+                    { tokenAddress: ERC20TestInst.address, id: ONE.toString(), amount: ONE_TOKEN.toString() },
+                    feeAddresses,
+                    feeAmount,
+                    signature,
+                    { from: user2 }
+                ),
+                "Exchange: Wrong tokenToSell"
+            );
+            await expectRevert(
+                ExchangeInst.makeExchangeERC721(
+                    orderId,
+                    user1,
+                    { tokenAddress: ERC721MainInst.address, id: ZERO, amount: ZERO },
+                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.div(TWO).toString() },
                     feeAddresses,
                     feeAmount,
                     signature,
@@ -429,7 +454,7 @@ contract(
                     orderId,
                     user1,
                     { tokenAddress: ERC721MainInst.address, id: ZERO, amount: ZERO },
-                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN },
+                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
                     feeAddresses,
                     feeAmount,
                     signature,
@@ -445,7 +470,7 @@ contract(
                     orderId,
                     user1,
                     { tokenAddress: ERC721MainInst.address, id: ZERO, amount: ZERO },
-                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN },
+                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
                     feeAddresses,
                     feeAmount,
                     signature,
@@ -459,7 +484,7 @@ contract(
                     orderId,
                     user1,
                     { tokenAddress: ERC721MainInst.address, id: ZERO, amount: ZERO },
-                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN },
+                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
                     feeAddresses,
                     feeAmount,
                     signature,
@@ -477,7 +502,7 @@ contract(
                 orderId,
                 user1,
                 { tokenAddress: ERC721MainInst.address, id: ZERO, amount: ZERO },
-                { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN },
+                { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
                 feeAddresses,
                 feeAmount,
                 signature,
@@ -522,7 +547,7 @@ contract(
 
             // mint token for user1
             message = EthCrypto.hash.keccak256([
-                { type: "address", value: ERC721MainInst.address },
+                { type: "address", value: ERC1155MainInst.address },
                 { type: "uint256", value: ZERO.toString() },
                 { type: "uint256", value: TEN.toString() }
             ]);
@@ -544,6 +569,7 @@ contract(
                 { type: "uint256", value: ZERO.toString() },
                 { type: "uint256", value: TEN.toString() },
                 { type: "address", value: ERC20TestInst.address },
+                //{ type: "uint256", value: ZERO.toString() },
                 { type: "uint256", value: ONE_TOKEN.toString() },
                 { type: "address[]", value: feeAddresses },
                 { type: "uint256[]", value: feeAmount },
@@ -557,11 +583,8 @@ contract(
                 ExchangeInst.makeExchangeERC1155(
                     invalidOrderId,
                     user1,
-                    ERC721MainInst.address,
-                    ZERO,
-                    TEN,
-                    ERC20TestInst.address,
-                    ONE_TOKEN,
+                    { tokenAddress: ERC1155MainInst.address, id: ZERO, amount: TEN.toString() },
+                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
                     feeAddresses,
                     feeAmount,
                     signature,
@@ -570,13 +593,11 @@ contract(
                 "Exchange: Signer should sign transaction"
             );
             await expectRevert(
-                ExchangeInst.makeExchangeERC721(
+                ExchangeInst.makeExchangeERC1155(
                     orderId,
                     user2,
-                    ERC721MainInst.address,
-                    ZERO,
-                    ERC20TestInst.address,
-                    ONE_TOKEN,
+                    { tokenAddress: ERC1155MainInst.address, id: ZERO, amount: TEN.toString() },
+                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
                     feeAddresses,
                     feeAmount,
                     signature,
@@ -585,13 +606,24 @@ contract(
                 "Exchange: Signer should sign transaction"
             );
             await expectRevert(
-                ExchangeInst.makeExchangeERC721(
+                ExchangeInst.makeExchangeERC1155(
                     orderId,
                     user1,
-                    ZERO_ADDRESS,
-                    ZERO,
-                    ERC20TestInst.address,
-                    ONE_TOKEN,
+                    { tokenAddress: ZERO_ADDRESS, id: ZERO, amount: TEN.toString() },
+                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
+                    feeAddresses,
+                    feeAmount,
+                    signature,
+                    { from: user2 }
+                ),
+                "Exchange: Wrong tokenToBuy"
+            );
+            await expectRevert(
+                ExchangeInst.makeExchangeERC1155(
+                    orderId,
+                    user1,
+                    { tokenAddress: ERC1155MainInst.address, id: ONE.toString(), amount: TEN.toString() },
+                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
                     feeAddresses,
                     feeAmount,
                     signature,
@@ -600,13 +632,11 @@ contract(
                 "Exchange: Signer should sign transaction"
             );
             await expectRevert(
-                ExchangeInst.makeExchangeERC721(
+                ExchangeInst.makeExchangeERC1155(
                     orderId,
                     user1,
-                    ERC721MainInst.address,
-                    ONE,
-                    ERC20TestInst.address,
-                    ONE_TOKEN,
+                    { tokenAddress: ERC1155MainInst.address, id: ZERO, amount: ONE.toString() },
+                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
                     feeAddresses,
                     feeAmount,
                     signature,
@@ -615,29 +645,37 @@ contract(
                 "Exchange: Signer should sign transaction"
             );
             await expectRevert(
-                ExchangeInst.makeExchangeERC721(
+                ExchangeInst.makeExchangeERC1155(
                     orderId,
                     user1,
-                    ERC721MainInst.address,
-                    ZERO,
-                    ZERO_ADDRESS,
-                    ONE_TOKEN,
+                    { tokenAddress: ERC1155MainInst.address, id: ZERO, amount: TEN.toString() },
+                    { tokenAddress: ZERO_ADDRESS, id: ZERO, amount: ONE_TOKEN.toString() },
                     feeAddresses,
                     feeAmount,
                     signature,
                     { from: user2 }
                 ),
-                "Exchange: Signer should sign transaction"
+                "Exchange: Wrong tokenToSell"
             );
-
             await expectRevert(
-                ExchangeInst.makeExchangeERC721(
+                ExchangeInst.makeExchangeERC1155(
                     orderId,
                     user1,
-                    ERC721MainInst.address,
-                    ZERO,
-                    ERC20TestInst.address,
-                    ONE_TOKEN.div(TWO),
+                    { tokenAddress: ERC1155MainInst.address, id: ZERO, amount: TEN.toString() },
+                    { tokenAddress: ERC20TestInst.address, id: ONE.toString(), amount: ONE_TOKEN.toString() },
+                    feeAddresses,
+                    feeAmount,
+                    signature,
+                    { from: user2 }
+                ),
+                "Exchange: Wrong tokenToSell"
+            );
+            await expectRevert(
+                ExchangeInst.makeExchangeERC1155(
+                    orderId,
+                    user1,
+                    { tokenAddress: ERC1155MainInst.address, id: ZERO, amount: TEN.toString() },
+                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.div(TWO).toString() },
                     feeAddresses,
                     feeAmount,
                     signature,
@@ -648,13 +686,11 @@ contract(
             let oldValue = feeAddresses[0];
             feeAddresses[0] = user1;
             await expectRevert(
-                ExchangeInst.makeExchangeERC721(
+                ExchangeInst.makeExchangeERC1155(
                     orderId,
                     user1,
-                    ERC721MainInst.address,
-                    ZERO,
-                    ERC20TestInst.address,
-                    ONE_TOKEN,
+                    { tokenAddress: ERC1155MainInst.address, id: ZERO, amount: TEN.toString() },
+                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.div(TWO).toString() },
                     feeAddresses,
                     feeAmount,
                     signature,
@@ -666,13 +702,11 @@ contract(
             oldValue = feeAmount[0];
             feeAmount[0] = new BN(oldValue).div(TWO).toString();
             await expectRevert(
-                ExchangeInst.makeExchangeERC721(
+                ExchangeInst.makeExchangeERC1155(
                     orderId,
                     user1,
-                    ERC721MainInst.address,
-                    ZERO,
-                    ERC20TestInst.address,
-                    ONE_TOKEN,
+                    { tokenAddress: ERC1155MainInst.address, id: ZERO, amount: TEN.toString() },
+                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.div(TWO).toString() },
                     feeAddresses,
                     feeAmount,
                     signature,
@@ -682,13 +716,11 @@ contract(
             );
             feeAmount[0] = oldValue;
             await expectRevert(
-                ExchangeInst.makeExchangeERC721(
+                ExchangeInst.makeExchangeERC1155(
                     orderId,
                     user1,
-                    ERC721MainInst.address,
-                    ZERO,
-                    ERC20TestInst.address,
-                    ONE_TOKEN,
+                    { tokenAddress: ERC1155MainInst.address, id: ZERO, amount: TEN.toString() },
+                    { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.div(TWO).toString() },
                     feeAddresses,
                     feeAmount,
                     signature,
@@ -702,13 +734,11 @@ contract(
             let feeRecipient1ERC20BalanceBefore = await ERC20TestInst.balanceOf(feeRecipient1);
             let feeRecipient2ERC20BalanceBefore = await ERC20TestInst.balanceOf(feeRecipient2);
 
-            await ExchangeInst.makeExchangeERC721(
+            await ExchangeInst.makeExchangeERC1155(
                 orderId,
                 user1,
-                ERC721MainInst.address,
-                ZERO,
-                ERC20TestInst.address,
-                ONE_TOKEN,
+                { tokenAddress: ERC1155MainInst.address, id: ZERO, amount: TEN.toString() },
+                { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
                 feeAddresses,
                 feeAmount,
                 signature,
@@ -725,7 +755,8 @@ contract(
             expect(feeRecipient1ERC20BalanceAfter.sub(feeRecipient1ERC20BalanceBefore)).to.be.bignumber.that.equals(new BN(feeAmount[0]));
             expect(feeRecipient2ERC20BalanceAfter.sub(feeRecipient2ERC20BalanceBefore)).to.be.bignumber.that.equals(new BN(feeAmount[1]));
 
-            expect(await ERC721MainInst.ownerOf(ZERO)).to.be.equals(user2);
+            expect(await ERC1155MainInst.balanceOf(user1, ZERO)).to.be.bignumber.that.equals(ZERO);
+            expect(await ERC1155MainInst.balanceOf(user2, ZERO)).to.be.bignumber.that.equals(TEN);
         })
     }
 )

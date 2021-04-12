@@ -5,11 +5,13 @@ pragma solidity ^0.8.0;
 import "openzeppelin-solidity/contracts/access/AccessControl.sol";
 import "openzeppelin-solidity/contracts/utils/cryptography/ECDSA.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/IERC721.sol";
+import "openzeppelin-solidity/contracts/token/ERC721/IERC721Receiver.sol";
 import "openzeppelin-solidity/contracts/token/ERC1155/IERC1155.sol";
+import "openzeppelin-solidity/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-solidity/contracts/utils/math/SafeMath.sol";
 
-contract Exchange is AccessControl {
+contract Exchange is AccessControl, IERC721Receiver, IERC1155Receiver {
     using SafeMath for uint256;
 
     struct NftTokenInfo {
@@ -43,6 +45,10 @@ contract Exchange is AccessControl {
             tokenToSell.tokenAddress != address(0) && tokenToSell.id == 0,
             "Exchange: Wrong tokenToSell"
         );
+        require(
+            feeAddresses.length == feeAmounts.length,
+            "Exchange: Wrong fees"
+        );
         _verifySigner(
             idOrder,
             whoIsSelling,
@@ -52,10 +58,6 @@ contract Exchange is AccessControl {
             feeAmounts,
             sender,
             signature
-        );
-        require(
-            feeAddresses.length == feeAmounts.length,
-            "Exchange: Wrong fees"
         );
 
         IERC721(tokenToBuy.tokenAddress).safeTransferFrom(
@@ -90,6 +92,18 @@ contract Exchange is AccessControl {
         bytes calldata signature
     ) external {
         address sender = _msgSender();
+        require(
+            tokenToBuy.tokenAddress != address(0),
+            "Exchange: Wrong tokenToBuy"
+        );
+        require(
+            tokenToSell.tokenAddress != address(0) && tokenToSell.id == 0,
+            "Exchange: Wrong tokenToSell"
+        );
+        require(
+            feeAddresses.length == feeAmounts.length,
+            "Exchange: Wrong fees"
+        );
         _verifySigner(
             idOrder,
             whoIsSelling,
@@ -99,10 +113,6 @@ contract Exchange is AccessControl {
             feeAmounts,
             sender,
             signature
-        );
-        require(
-            feeAddresses.length == feeAmounts.length,
-            "Exchange: Wrong fees"
         );
 
         IERC1155(tokenToBuy.tokenAddress).safeTransferFrom(
@@ -151,7 +161,7 @@ contract Exchange is AccessControl {
         message = abi.encodePacked(
             message,
             tokenToSell.tokenAddress,
-            tokenToSell.id,
+            //tokenToSell.id,
             tokenToSell.amount,
             feeAddresses,
             feeAmounts,
@@ -162,5 +172,34 @@ contract Exchange is AccessControl {
             hasRole(SIGNER_ROLE, messageSigner),
             "Exchange: Signer should sign transaction"
         );
+    }
+
+    function onERC1155Received(
+        address,
+        address,
+        uint256,
+        uint256,
+        bytes calldata
+    ) external pure override returns (bytes4) {
+        return IERC1155Receiver.onERC1155Received.selector;
+    }
+
+    function onERC1155BatchReceived(
+        address,
+        address,
+        uint256[] calldata,
+        uint256[] calldata,
+        bytes calldata
+    ) external pure override returns (bytes4) {
+        return IERC1155Receiver.onERC1155BatchReceived.selector;
+    }
+
+    function onERC721Received(
+        address,
+        address,
+        uint256,
+        bytes calldata
+    ) external pure override returns (bytes4) {
+        return IERC721Receiver.onERC721Received.selector;
     }
 }
