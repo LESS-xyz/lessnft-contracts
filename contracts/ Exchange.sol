@@ -3,6 +3,7 @@
 pragma solidity ^0.8.0;
 
 import "openzeppelin-solidity/contracts/access/AccessControl.sol";
+import "openzeppelin-solidity/contracts/security/ReentrancyGuard.sol";
 import "openzeppelin-solidity/contracts/utils/cryptography/ECDSA.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/IERC721.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/IERC721Receiver.sol";
@@ -11,7 +12,7 @@ import "openzeppelin-solidity/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-solidity/contracts/utils/math/SafeMath.sol";
 
-contract Exchange is AccessControl, IERC721Receiver, IERC1155Receiver {
+contract Exchange is AccessControl, IERC721Receiver, IERC1155Receiver, ReentrancyGuard {
     using SafeMath for uint256;
 
     struct NftTokenInfo {
@@ -35,7 +36,7 @@ contract Exchange is AccessControl, IERC721Receiver, IERC1155Receiver {
         address[] calldata feeAddresses,
         uint256[] calldata feeAmounts,
         bytes calldata signature
-    ) external {
+    ) external nonReentrant {
         address sender = _msgSender();
         require(
             tokenToBuy.tokenAddress != address(0) && tokenToBuy.amount == 0,
@@ -90,7 +91,7 @@ contract Exchange is AccessControl, IERC721Receiver, IERC1155Receiver {
         address[] calldata feeAddresses,
         uint256[] calldata feeAmounts,
         bytes calldata signature
-    ) external {
+    ) external nonReentrant {
         address sender = _msgSender();
         require(
             tokenToBuy.tokenAddress != address(0),
