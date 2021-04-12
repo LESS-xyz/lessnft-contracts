@@ -2,9 +2,10 @@ const BN = require('bn.js');
 
 require('dotenv').config();
 const {
+    DDS_BACKEND
 } = process.env;
 
-const Vault = artifacts.require("Vault");
+const Exchange = artifacts.require("Exchange");
 
 const debug = "true";
 
@@ -19,9 +20,10 @@ module.exports = async function (deployer, network) {
     if (network == "test" || network == "development")
         return;
 
-    /* await deployer.deploy(
-        Vault
+    await deployer.deploy(
+        Exchange
     );
-    let VaultInst = await Vault.deployed();
-    console.log("Vault =", VaultInst.address); */
+    let ExchangeInst = await Exchange.deployed();
+    await ExchangeInst.grantRole(await ExchangeInst.SIGNER_ROLE(), DDS_BACKEND);
+    console.log("Exchange =", ExchangeInst.address);
 };

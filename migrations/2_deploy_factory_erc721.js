@@ -2,6 +2,7 @@ const BN = require('bn.js');
 
 require('dotenv').config();
 const {
+    DDS_BACKEND
 } = process.env;
 
 const FactoryErc721 = artifacts.require("FactoryErc721");
@@ -23,5 +24,6 @@ module.exports = async function (deployer, network) {
         FactoryErc721
     );
     let FactoryErc721Inst = await FactoryErc721.deployed();
+    await FactoryErc721Inst.grantRole(await FactoryErc721Inst.SIGNER_ROLE(), DDS_BACKEND);
     console.log("FactoryErc721 =", FactoryErc721Inst.address);
 };

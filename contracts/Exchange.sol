@@ -12,7 +12,12 @@ import "openzeppelin-solidity/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-solidity/contracts/utils/math/SafeMath.sol";
 
-contract Exchange is AccessControl, IERC721Receiver, IERC1155Receiver, ReentrancyGuard {
+contract Exchange is
+    AccessControl,
+    IERC721Receiver,
+    IERC1155Receiver,
+    ReentrancyGuard
+{
     using SafeMath for uint256;
 
     struct NftTokenInfo {
@@ -22,6 +27,23 @@ contract Exchange is AccessControl, IERC721Receiver, IERC1155Receiver, Reentranc
     }
 
     bytes32 public SIGNER_ROLE = keccak256("SIGNER_ROLE");
+
+    event ExchangeMadeErc721(
+        address seller,
+        address buyer,
+        NftTokenInfo sellToken,
+        NftTokenInfo buyToken,
+        address[] feeAddresses,
+        uint256[] feeAmounts
+    );
+    event ExchangeMadeErc1155(
+        address seller,
+        address buyer,
+        NftTokenInfo sellToken,
+        NftTokenInfo buyToken,
+        address[] feeAddresses,
+        uint256[] feeAmounts
+    );
 
     constructor() {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
@@ -81,6 +103,15 @@ contract Exchange is AccessControl, IERC721Receiver, IERC1155Receiver, Reentranc
             whoIsSelling,
             tokenToSeller
         );
+
+        emit ExchangeMadeErc721(
+            whoIsSelling,
+            sender,
+            tokenToBuy,
+            tokenToSell,
+            feeAddresses,
+            feeAmounts
+        );
     }
 
     function makeExchangeERC1155(
@@ -138,6 +169,15 @@ contract Exchange is AccessControl, IERC721Receiver, IERC1155Receiver, Reentranc
             sender,
             whoIsSelling,
             tokenToSeller
+        );
+
+        emit ExchangeMadeErc1155(
+            whoIsSelling,
+            sender,
+            tokenToBuy,
+            tokenToSell,
+            feeAddresses,
+            feeAmounts
         );
     }
 
