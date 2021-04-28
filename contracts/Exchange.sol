@@ -25,6 +25,11 @@ contract Exchange is
         uint256 id;
         uint256 amount;
     }
+    
+    struct FeeAddrAm {
+    	address[] feeAddresses;
+    	uint256[] feeAmounts;
+    }
 
     bytes32 public SIGNER_ROLE = keccak256("SIGNER_ROLE");
 
@@ -52,14 +57,12 @@ contract Exchange is
 
     function makeExchangeERC721(
         bytes32 idOrder,
-        address whoIsSelling,
+        address[2] calldata SellerBuyer,
         NftTokenInfo calldata tokenToBuy,
         NftTokenInfo calldata tokenToSell,
-        address[] calldata feeAddresses,
-        uint256[] calldata feeAmounts,
+        FeeAddrAm calldata fee,
         bytes calldata signature
     ) external nonReentrant {
-        address sender = _msgSender();
         require(
             tokenToBuy.tokenAddress != address(0) && tokenToBuy.amount == 0,
             "Exchange: Wrong tokenToBuy"
@@ -69,61 +72,57 @@ contract Exchange is
             "Exchange: Wrong tokenToSell"
         );
         require(
-            feeAddresses.length == feeAmounts.length,
+            fee.feeAddresses.length == fee.feeAmounts.length,
             "Exchange: Wrong fees"
         );
         _verifySigner(
             idOrder,
-            whoIsSelling,
+            SellerBuyer,
             tokenToBuy,
             tokenToSell,
-            feeAddresses,
-            feeAmounts,
-            sender,
+            fee,
             signature
         );
 
         IERC721(tokenToBuy.tokenAddress).safeTransferFrom(
-            whoIsSelling,
-            sender,
+            SellerBuyer[0],
+            SellerBuyer[1],
             tokenToBuy.id
         );
 
         uint256 tokenToSeller = tokenToSell.amount;
-        for (uint256 i = 0; i < feeAddresses.length; i = i.add(1)) {
-            tokenToSeller = tokenToSeller.sub(uint256(feeAmounts[i]));
+        for (uint256 i = 0; i < fee.feeAddresses.length; i = i.add(1)) {
+            tokenToSeller = tokenToSeller.sub(uint256(fee.feeAmounts[i]));
             IERC20(tokenToSell.tokenAddress).transferFrom(
-                sender,
-                address(feeAddresses[i]),
-                uint256(feeAmounts[i])
+                SellerBuyer[1],
+                address(fee.feeAddresses[i]),
+                uint256(fee.feeAmounts[i])
             );
         }
         IERC20(tokenToSell.tokenAddress).transferFrom(
-            sender,
-            whoIsSelling,
+            SellerBuyer[1],
+            SellerBuyer[0],
             tokenToSeller
         );
 
         emit ExchangeMadeErc721(
-            whoIsSelling,
-            sender,
+            SellerBuyer[0],
+            SellerBuyer[1],
             tokenToBuy,
             tokenToSell,
-            feeAddresses,
-            feeAmounts
+            fee.feeAddresses,
+            fee.feeAmounts
         );
     }
 
     function makeExchangeERC1155(
         bytes32 idOrder,
-        address whoIsSelling,
+        address[2] calldata SellerBuyer,
         NftTokenInfo calldata tokenToBuy,
         NftTokenInfo calldata tokenToSell,
-        address[] calldata feeAddresses,
-        uint256[] calldata feeAmounts,
+        FeeAddrAm calldata fee,
         bytes calldata signature
     ) external nonReentrant {
-        address sender = _msgSender();
         require(
             tokenToBuy.tokenAddress != address(0),
             "Exchange: Wrong tokenToBuy"
@@ -133,68 +132,64 @@ contract Exchange is
             "Exchange: Wrong tokenToSell"
         );
         require(
-            feeAddresses.length == feeAmounts.length,
+            fee.feeAddresses.length == fee.feeAmounts.length,
             "Exchange: Wrong fees"
         );
         _verifySigner(
             idOrder,
-            whoIsSelling,
+            SellerBuyer,
             tokenToBuy,
             tokenToSell,
-            feeAddresses,
-            feeAmounts,
-            sender,
+            fee,
             signature
         );
 
         IERC1155(tokenToBuy.tokenAddress).safeTransferFrom(
-            whoIsSelling,
-            sender,
+            SellerBuyer[0],
+            SellerBuyer[1],
             tokenToBuy.id,
             tokenToBuy.amount,
             ""
         );
 
         uint256 tokenToSeller = tokenToSell.amount;
-        for (uint256 i = 0; i < feeAddresses.length; i = i.add(1)) {
-            tokenToSeller = tokenToSeller.sub(feeAmounts[i]);
+        for (uint256 i = 0; i < fee.feeAddresses.length; i = i.add(1)) {
+            tokenToSeller = tokenToSeller.sub(fee.feeAmounts[i]);
             IERC20(tokenToSell.tokenAddress).transferFrom(
-                sender,
-                feeAddresses[i],
-                feeAmounts[i]
+                SellerBuyer[1],
+                fee.feeAddresses[i],
+                fee.feeAmounts[i]
             );
         }
 
         IERC20(tokenToSell.tokenAddress).transferFrom(
-            sender,
-            whoIsSelling,
+            SellerBuyer[1],
+            SellerBuyer[0],
             tokenToSeller
         );
 
         emit ExchangeMadeErc1155(
-            whoIsSelling,
-            sender,
+            SellerBuyer[0],
+            SellerBuyer[1],
             tokenToBuy,
             tokenToSell,
-            feeAddresses,
-            feeAmounts
+            fee.feeAddresses,
+            fee.feeAmounts
         );
     }
 
     function _verifySigner(
         bytes32 idOrder,
-        address whoIsSelling,
+        address[2] calldata SellerBuyer,
         NftTokenInfo calldata tokenToBuy,
         NftTokenInfo calldata tokenToSell,
-        address[] calldata feeAddresses,
-        uint256[] calldata feeAmounts,
-        address whoIsBuying,
+        FeeAddrAm calldata fee,
         bytes calldata signature
     ) private view {
         bytes memory message =
             abi.encodePacked(
                 idOrder,
-                whoIsSelling,
+                SellerBuyer[0],
                 tokenToBuy.tokenAddress,
                 tokenToBuy.id,
                 tokenToBuy.amount
@@ -204,9 +199,9 @@ contract Exchange is
             tokenToSell.tokenAddress,
             //tokenToSell.id,
             tokenToSell.amount,
-            feeAddresses,
-            feeAmounts,
-            whoIsBuying
+            fee.feeAddresses,
+            fee.feeAmounts,
+            SellerBuyer[1]
         );
         address messageSigner = ECDSA.recover(keccak256(message), signature);
         require(
