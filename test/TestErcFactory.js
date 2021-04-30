@@ -77,10 +77,18 @@ contract(
 
         beforeEach(async () => {
             // Init contracts
+            ExchangeInst = await Exchange.new(
+                { from: ExchangeDeployer }
+            );
+            SIGNER_ROLE = await ExchangeInst.SIGNER_ROLE();
+            ExchangeSigner = EthCrypto.createIdentity();
+            await ExchangeInst.grantRole(SIGNER_ROLE, ExchangeSigner.address, { from: ExchangeDeployer });
+
             FactoryErc721Inst = await FactoryErc721.new(
+                ExchangeInst.address,
                 { from: Factory721Deployer }
             );
-            SIGNER_ROLE = await FactoryErc721Inst.SIGNER_ROLE();
+            expect(await FactoryErc721Inst.SIGNER_ROLE()).to.be.equals(SIGNER_ROLE);
             Factory721Signer = EthCrypto.createIdentity();
             await FactoryErc721Inst.grantRole(await FactoryErc721Inst.SIGNER_ROLE(), Factory721Signer.address, { from: Factory721Deployer });
 
@@ -90,13 +98,6 @@ contract(
             expect(await FactoryErc1155Inst.SIGNER_ROLE()).to.be.equals(SIGNER_ROLE);
             Factory1155Signer = EthCrypto.createIdentity();
             await FactoryErc1155Inst.grantRole(SIGNER_ROLE, Factory1155Signer.address, { from: Factory1155Deployer });
-
-            ExchangeInst = await Exchange.new(
-                { from: ExchangeDeployer }
-            );
-            expect(await ExchangeInst.SIGNER_ROLE()).to.be.equals(SIGNER_ROLE);
-            ExchangeSigner = EthCrypto.createIdentity();
-            await ExchangeInst.grantRole(SIGNER_ROLE, ExchangeSigner.address, { from: ExchangeDeployer });
 
             Nft721Signer = EthCrypto.createIdentity();
             Nft1155Signer = EthCrypto.createIdentity();
@@ -135,6 +136,8 @@ contract(
             expect(await ERC721MainInst.name()).to.be.equals(NFT_721_NAME);
             expect(await ERC721MainInst.symbol()).to.be.equals(NFT_721_SYMBOL);
             expect(await ERC721MainInst.baseURI()).to.be.equals(NFT_721_BASE_URI);
+
+            expect(await ERC721MainInst.exchange()).to.be.equals(ExchangeInst.address);
             expect(await ERC721MainInst.factory()).to.be.equals(FactoryErc721Inst.address);
 
             expect(await ERC721MainInst.SIGNER_ROLE()).to.be.equals(SIGNER_ROLE);
@@ -212,6 +215,7 @@ contract(
 
             expect(await ERC721MainInst.balanceOf(user1)).to.be.bignumber.that.equals(ONE);
             expect(await ERC721MainInst.ownerOf(ZERO)).to.be.equals(user1);
+            expect(await ERC721MainInst.getApproved(ZERO)).to.be.equals(ExchangeInst.address); // token approved to exchange by default
 
             let fakeSigner = EthCrypto.createIdentity();
             message = EthCrypto.hash.keccak256([
