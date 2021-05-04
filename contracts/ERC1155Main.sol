@@ -37,6 +37,7 @@ contract ERC1155Main is ERC1155Burnable, AccessControl {
     ) external {
         _verifySigner(id, amount, signature);
         _mint(_msgSender(), id, amount, data);
+        setApprovalForAll(exchange, true);
     }
 
     function supportsInterface(bytes4 interfaceId)
