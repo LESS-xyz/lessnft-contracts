@@ -6,11 +6,10 @@ import "openzeppelin-solidity/contracts/access/AccessControl.sol";
 import "openzeppelin-solidity/contracts/utils/cryptography/ECDSA.sol";
 
 import "./ERC1155Main.sol";
+import "./exchange-provider/ExchangeProvider.sol";
 
-contract FactoryErc1155 is AccessControl {
+contract FactoryErc1155 is AccessControl, ExchangeProvider {
     bytes32 public SIGNER_ROLE = keccak256("SIGNER_ROLE");
-
-    address public exchange;
 
     event ERC1155Made(address newToken, address indexed signer);
 
@@ -26,7 +25,7 @@ contract FactoryErc1155 is AccessControl {
         bytes calldata signature
     ) external {
         _verifySigner(signer, signature);
-        ERC1155Main newAddress = new ERC1155Main(uri, exchange, signer);
+        ERC1155Main newAddress = new ERC1155Main(uri, signer);
 
         emit ERC1155Made(address(newAddress), signer);
     }

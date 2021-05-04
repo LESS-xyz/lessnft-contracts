@@ -91,6 +91,13 @@ contract(
             expect(await FactoryErc721Inst.SIGNER_ROLE()).to.be.equals(SIGNER_ROLE);
             Factory721Signer = EthCrypto.createIdentity();
             await FactoryErc721Inst.grantRole(await FactoryErc721Inst.SIGNER_ROLE(), Factory721Signer.address, { from: Factory721Deployer });
+            await expectRevert(
+                FactoryErc721Inst.setExchange(user1, { from: user1 }),
+                "Factory: Only admin allowed"
+            );
+            await FactoryErc721Inst.setExchange(user1, { from: Factory721Deployer });
+            expect(await FactoryErc721Inst.exchange()).to.be.equals(user1);
+            await FactoryErc721Inst.setExchange(ExchangeInst.address, { from: Factory721Deployer });
 
             FactoryErc1155Inst = await FactoryErc1155.new(
                 ExchangeInst.address,
@@ -99,6 +106,13 @@ contract(
             expect(await FactoryErc1155Inst.SIGNER_ROLE()).to.be.equals(SIGNER_ROLE);
             Factory1155Signer = EthCrypto.createIdentity();
             await FactoryErc1155Inst.grantRole(SIGNER_ROLE, Factory1155Signer.address, { from: Factory1155Deployer });
+            await expectRevert(
+                FactoryErc1155Inst.setExchange(user1, { from: user1 }),
+                "Factory: Only admin allowed"
+            );
+            await FactoryErc1155Inst.setExchange(user1, { from: Factory1155Deployer });
+            expect(await FactoryErc1155Inst.exchange()).to.be.equals(user1);
+            await FactoryErc1155Inst.setExchange(ExchangeInst.address, { from: Factory1155Deployer });
 
             Nft721Signer = EthCrypto.createIdentity();
             Nft1155Signer = EthCrypto.createIdentity();

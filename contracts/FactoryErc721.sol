@@ -6,11 +6,10 @@ import "openzeppelin-solidity/contracts/access/AccessControl.sol";
 import "openzeppelin-solidity/contracts/utils/cryptography/ECDSA.sol";
 
 import "./ERC721Main.sol";
+import "./exchange-provider/ExchangeProvider.sol";
 
-contract FactoryErc721 is AccessControl {
+contract FactoryErc721 is AccessControl, ExchangeProvider {
     bytes32 public SIGNER_ROLE = keccak256("SIGNER_ROLE");
-
-    address public exchange;
 
     event ERC721Made(
         address newToken,
@@ -33,7 +32,7 @@ contract FactoryErc721 is AccessControl {
         bytes memory signature
     ) external {
         _verifySigner(signer, signature);
-        ERC721Main newAddress = new ERC721Main(name, symbol, baseURI, exchange, signer);
+        ERC721Main newAddress = new ERC721Main(name, symbol, baseURI, signer);
 
         emit ERC721Made(address(newAddress), name, symbol, signer);
     }

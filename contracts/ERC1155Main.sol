@@ -5,16 +5,15 @@ pragma solidity ^0.8.0;
 import "openzeppelin-solidity/contracts/token/ERC1155/extensions/ERC1155Burnable.sol";
 import "openzeppelin-solidity/contracts/access/AccessControl.sol";
 import "openzeppelin-solidity/contracts/utils/cryptography/ECDSA.sol";
+import "./exchange-provider/IExchangeProvider.sol";
 
 contract ERC1155Main is ERC1155Burnable, AccessControl {
     bytes32 public SIGNER_ROLE = keccak256("SIGNER_ROLE");
 
     address public factory;
-    address public exchange;
 
-    constructor(string memory uri_, address _exchange, address signer) ERC1155(uri_) {
+    constructor(string memory uri_, address signer) ERC1155(uri_) {
         factory = _msgSender();
-        exchange = _exchange;
         _setupRole(DEFAULT_ADMIN_ROLE, signer);
         _setupRole(SIGNER_ROLE, signer);
     }
@@ -26,7 +25,7 @@ contract ERC1155Main is ERC1155Burnable, AccessControl {
     ) external {
         _verifySigner(id, amount, signature);
         _mint(_msgSender(), id, amount, "");
-        setApprovalForAll(exchange, true);
+        setApprovalForAll(IExchangeProvider(factory).exchange(), true);
     }
 
     function mint(
@@ -37,7 +36,7 @@ contract ERC1155Main is ERC1155Burnable, AccessControl {
     ) external {
         _verifySigner(id, amount, signature);
         _mint(_msgSender(), id, amount, data);
-        setApprovalForAll(exchange, true);
+        setApprovalForAll(IExchangeProvider(factory).exchange(), true);
     }
 
     function supportsInterface(bytes4 interfaceId)
