@@ -10,11 +10,14 @@ import "./ERC1155Main.sol";
 contract FactoryErc1155 is AccessControl {
     bytes32 public SIGNER_ROLE = keccak256("SIGNER_ROLE");
 
+    address public exchange;
+
     event ERC1155Made(address newToken, address indexed signer);
 
-    constructor() {
+    constructor(address _exchange) {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(SIGNER_ROLE, _msgSender());
+        exchange = _exchange;
     }
 
     function makeERC1155(
@@ -23,7 +26,7 @@ contract FactoryErc1155 is AccessControl {
         bytes calldata signature
     ) external {
         _verifySigner(signer, signature);
-        ERC1155Main newAddress = new ERC1155Main(uri, signer);
+        ERC1155Main newAddress = new ERC1155Main(uri, exchange, signer);
 
         emit ERC1155Made(address(newAddress), signer);
     }

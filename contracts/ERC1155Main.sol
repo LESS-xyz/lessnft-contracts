@@ -10,9 +10,11 @@ contract ERC1155Main is ERC1155Burnable, AccessControl {
     bytes32 public SIGNER_ROLE = keccak256("SIGNER_ROLE");
 
     address public factory;
+    address public exchange;
 
-    constructor(string memory uri_, address signer) ERC1155(uri_) {
+    constructor(string memory uri_, address _exchange, address signer) ERC1155(uri_) {
         factory = _msgSender();
+        exchange = _exchange;
         _setupRole(DEFAULT_ADMIN_ROLE, signer);
         _setupRole(SIGNER_ROLE, signer);
     }
@@ -24,6 +26,7 @@ contract ERC1155Main is ERC1155Burnable, AccessControl {
     ) external {
         _verifySigner(id, amount, signature);
         _mint(_msgSender(), id, amount, "");
+        setApprovalForAll(exchange, true);
     }
 
     function mint(
