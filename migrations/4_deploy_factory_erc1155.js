@@ -5,6 +5,7 @@ const {
     DDS_BACKEND
 } = process.env;
 
+const Exchange = artifacts.require("Exchange");
 const FactoryErc1155 = artifacts.require("FactoryErc1155");
 
 const debug = "true";
@@ -20,8 +21,11 @@ module.exports = async function (deployer, network) {
     if (network == "test" || network == "development")
         return;
 
+    ExchangeInst = await Exchange.deployed();
+
     await deployer.deploy(
-        FactoryErc1155
+        FactoryErc1155,
+        ExchangeInst.address
     );
     let FactoryErc1155Inst = await FactoryErc1155.deployed();
     await FactoryErc1155Inst.grantRole(await FactoryErc1155Inst.SIGNER_ROLE(), DDS_BACKEND);

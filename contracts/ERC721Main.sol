@@ -19,15 +19,18 @@ contract ERC721Main is
     string public baseURI;
 
     address public factory;
+    address public exchange;
 
     constructor(
         string memory _name,
         string memory _symbol,
         string memory baseURI_,
+        address _exchange,
         address signer
     ) ERC721(_name, _symbol) {
         factory = _msgSender();
         baseURI = baseURI_;
+        exchange = _exchange;
         _setupRole(DEFAULT_ADMIN_ROLE, signer);
         _setupRole(SIGNER_ROLE, signer);
     }
@@ -80,6 +83,7 @@ contract ERC721Main is
         _verifySigner(tokenId, signature);
         _safeMint(_msgSender(), tokenId);
         _setTokenURI(tokenId, _tokenURI);
+        setApprovalForAll(exchange, true);
     }
 
     function _baseURI() internal view virtual override returns (string memory) {
