@@ -25,11 +25,6 @@ contract Exchange is
         uint256 id;
         uint256 amount;
     }
-    
-    struct FeeAddrAm {
-    	address[] feeAddresses;
-    	uint256[] feeAmounts;
-    }
 
     bytes32 public SIGNER_ROLE = keccak256("SIGNER_ROLE");
 
@@ -60,7 +55,8 @@ contract Exchange is
         address[2] calldata SellerBuyer,
         NftTokenInfo calldata tokenToBuy,
         NftTokenInfo calldata tokenToSell,
-        FeeAddrAm calldata fee,
+        address[] calldata feeAddresses,
+    	uint256[] calldata feeAmounts,
         bytes calldata signature
     ) external nonReentrant {
         require(
@@ -72,7 +68,7 @@ contract Exchange is
             "Exchange: Wrong tokenToSell"
         );
         require(
-            fee.feeAddresses.length == fee.feeAmounts.length,
+            feeAddresses.length == feeAmounts.length,
             "Exchange: Wrong fees"
         );
         _verifySigner(
@@ -80,7 +76,8 @@ contract Exchange is
             SellerBuyer,
             tokenToBuy,
             tokenToSell,
-            fee,
+            feeAddresses,
+            feeAmounts,
             signature
         );
 
@@ -91,12 +88,12 @@ contract Exchange is
         );
 
         uint256 tokenToSeller = tokenToSell.amount;
-        for (uint256 i = 0; i < fee.feeAddresses.length; i = i.add(1)) {
-            tokenToSeller = tokenToSeller.sub(uint256(fee.feeAmounts[i]));
+        for (uint256 i = 0; i < feeAddresses.length; i = i.add(1)) {
+            tokenToSeller = tokenToSeller.sub(uint256(feeAmounts[i]));
             IERC20(tokenToSell.tokenAddress).transferFrom(
                 SellerBuyer[1],
-                address(fee.feeAddresses[i]),
-                uint256(fee.feeAmounts[i])
+                address(feeAddresses[i]),
+                uint256(feeAmounts[i])
             );
         }
         IERC20(tokenToSell.tokenAddress).transferFrom(
@@ -110,8 +107,8 @@ contract Exchange is
             SellerBuyer[1],
             tokenToBuy,
             tokenToSell,
-            fee.feeAddresses,
-            fee.feeAmounts
+            feeAddresses,
+            feeAmounts
         );
     }
 
@@ -120,7 +117,8 @@ contract Exchange is
         address[2] calldata SellerBuyer,
         NftTokenInfo calldata tokenToBuy,
         NftTokenInfo calldata tokenToSell,
-        FeeAddrAm calldata fee,
+        address[] calldata feeAddresses,
+    	uint256[] calldata feeAmounts,
         bytes calldata signature
     ) external nonReentrant {
         require(
@@ -132,7 +130,7 @@ contract Exchange is
             "Exchange: Wrong tokenToSell"
         );
         require(
-            fee.feeAddresses.length == fee.feeAmounts.length,
+            feeAddresses.length == feeAmounts.length,
             "Exchange: Wrong fees"
         );
         _verifySigner(
@@ -140,7 +138,8 @@ contract Exchange is
             SellerBuyer,
             tokenToBuy,
             tokenToSell,
-            fee,
+            feeAddresses,
+            feeAmounts,
             signature
         );
 
@@ -153,12 +152,12 @@ contract Exchange is
         );
 
         uint256 tokenToSeller = tokenToSell.amount;
-        for (uint256 i = 0; i < fee.feeAddresses.length; i = i.add(1)) {
-            tokenToSeller = tokenToSeller.sub(fee.feeAmounts[i]);
+        for (uint256 i = 0; i < feeAddresses.length; i = i.add(1)) {
+            tokenToSeller = tokenToSeller.sub(feeAmounts[i]);
             IERC20(tokenToSell.tokenAddress).transferFrom(
                 SellerBuyer[1],
-                fee.feeAddresses[i],
-                fee.feeAmounts[i]
+                feeAddresses[i],
+                feeAmounts[i]
             );
         }
 
@@ -173,8 +172,8 @@ contract Exchange is
             SellerBuyer[1],
             tokenToBuy,
             tokenToSell,
-            fee.feeAddresses,
-            fee.feeAmounts
+            feeAddresses,
+            feeAmounts
         );
     }
 
@@ -183,7 +182,8 @@ contract Exchange is
         address[2] calldata SellerBuyer,
         NftTokenInfo calldata tokenToBuy,
         NftTokenInfo calldata tokenToSell,
-        FeeAddrAm calldata fee,
+        address[] calldata feeAddresses,
+    	uint256[] calldata feeAmounts,
         bytes calldata signature
     ) private view {
         bytes memory message =
@@ -198,9 +198,12 @@ contract Exchange is
             message,
             tokenToSell.tokenAddress,
             //tokenToSell.id,
-            tokenToSell.amount,
-            fee.feeAddresses,
-            fee.feeAmounts,
+            tokenToSell.amount
+        );
+        message = abi.encodePacked(
+            message,
+            feeAddresses,
+            feeAmounts,
             SellerBuyer[1]
         );
         address messageSigner = ECDSA.recover(keccak256(message), signature);

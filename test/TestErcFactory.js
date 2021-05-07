@@ -369,7 +369,8 @@ contract(
                     [ user1, user2 ],
                     { tokenAddress: ERC721MainInst.address, id: ZERO, amount: ZERO },
                     { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
-                    { feeAddresses: feeAddresses, feeAmounts: feeAmount },
+                    feeAddresses,
+                    feeAmount,
                     signature,
                     { from: user2 }
                 ),
@@ -381,7 +382,8 @@ contract(
                     [ user2, user1 ],
                     { tokenAddress: ERC721MainInst.address, id: ZERO, amount: ZERO },
                     { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
-                    { feeAddresses: feeAddresses, feeAmounts: feeAmount },
+                    feeAddresses,
+                    feeAmount,
                     signature,
                     { from: user2 }
                 ),
@@ -393,7 +395,8 @@ contract(
                     [ user1, user2 ],
                     { tokenAddress: ZERO_ADDRESS, id: ZERO, amount: ZERO },
                     { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
-                    { feeAddresses: feeAddresses, feeAmounts: feeAmount },
+                    feeAddresses,
+                    feeAmount,
                     signature,
                     { from: user2 }
                 ),
@@ -405,7 +408,8 @@ contract(
                     [ user1, user2 ],
                     { tokenAddress: ERC721MainInst.address, id: ONE.toString(), amount: ZERO },
                     { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
-                    { feeAddresses: feeAddresses, feeAmounts: feeAmount },
+                    feeAddresses,
+                    feeAmount,
                     signature,
                     { from: user2 }
                 ),
@@ -417,7 +421,8 @@ contract(
                     [ user1, user2 ],
                     { tokenAddress: ERC721MainInst.address, id: ZERO, amount: ONE.toString() },
                     { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
-                    { feeAddresses: feeAddresses, feeAmounts: feeAmount },
+                    feeAddresses,
+                    feeAmount,
                     signature,
                     { from: user2 }
                 ),
@@ -429,7 +434,8 @@ contract(
                     [ user1, user2 ],
                     { tokenAddress: ERC721MainInst.address, id: ZERO, amount: ZERO },
                     { tokenAddress: ZERO_ADDRESS, id: ZERO, amount: ONE_TOKEN.toString() },
-                    { feeAddresses: feeAddresses, feeAmounts: feeAmount },
+                    feeAddresses,
+                    feeAmount,
                     signature,
                     { from: user2 }
                 ),
@@ -441,7 +447,8 @@ contract(
                     [ user1, user2 ],
                     { tokenAddress: ERC721MainInst.address, id: ZERO, amount: ZERO },
                     { tokenAddress: ERC20TestInst.address, id: ONE.toString(), amount: ONE_TOKEN.toString() },
-                    { feeAddresses: feeAddresses, feeAmounts: feeAmount },
+                    feeAddresses,
+                    feeAmount,
                     signature,
                     { from: user2 }
                 ),
@@ -453,7 +460,8 @@ contract(
                     [ user1, user2 ],
                     { tokenAddress: ERC721MainInst.address, id: ZERO, amount: ZERO },
                     { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.div(TWO).toString() },
-                    { feeAddresses: feeAddresses, feeAmounts: feeAmount },
+                    feeAddresses,
+                    feeAmount,
                     signature,
                     { from: user2 }
                 ),
@@ -467,7 +475,8 @@ contract(
                     [ user1, user2 ],
                     { tokenAddress: ERC721MainInst.address, id: ZERO, amount: ZERO },
                     { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
-                    { feeAddresses: feeAddresses, feeAmounts: feeAmount },
+                    feeAddresses,
+                    feeAmount,
                     signature,
                     { from: user2 }
                 ),
@@ -482,21 +491,23 @@ contract(
                     [ user1, user2 ],
                     { tokenAddress: ERC721MainInst.address, id: ZERO, amount: ZERO },
                     { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
-                    { feeAddresses: feeAddresses, feeAmounts: feeAmount },
+                    feeAddresses,
+                    feeAmount,
                     signature,
                     { from: user2 }
                 ),
                 "Exchange: Signer should sign transaction"
             );
             feeAmount[0] = oldValue;
-            
+
             await expectRevert(
-            	ExchangeInst.makeExchangeERC1155(
+            	ExchangeInst.makeExchangeERC721(
                 	orderId,
                 	[ user1, user3 ],
-                	{ tokenAddress: ERC1155MainInst.address, id: ZERO, amount: TEN.toString() },
+                	{ tokenAddress: ERC721MainInst.address, id: ZERO, amount: ZERO },
                 	{ tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
-                	{ feeAddresses: feeAddresses, feeAmounts: feeAmount },
+                	feeAddresses,
+                    feeAmount,
                 	signature,
                 	{ from: user2 }
             	),
@@ -513,7 +524,8 @@ contract(
                 [ user1, user2 ],
                 { tokenAddress: ERC721MainInst.address, id: ZERO, amount: ZERO },
                 { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
-                { feeAddresses: feeAddresses, feeAmounts: feeAmount },
+                feeAddresses,
+                feeAmount,
                 signature,
                 { from: user2 }
             );
@@ -594,7 +606,8 @@ contract(
                     [ user1, user2 ],
                     { tokenAddress: ERC1155MainInst.address, id: ZERO, amount: TEN.toString() },
                     { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
-                    { feeAddresses: feeAddresses, feeAmounts: feeAmount },
+                    feeAddresses,
+                    feeAmount,
                     signature,
                     { from: user2 }
                 ),
@@ -606,7 +619,8 @@ contract(
                     [ user2, user1 ],
                     { tokenAddress: ERC1155MainInst.address, id: ZERO, amount: TEN.toString() },
                     { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
-                    { feeAddresses: feeAddresses, feeAmounts: feeAmount },
+                    feeAddresses,
+                    feeAmount,
                     signature,
                     { from: user2 }
                 ),
@@ -618,7 +632,8 @@ contract(
                     [ user1, user2 ],
                     { tokenAddress: ZERO_ADDRESS, id: ZERO, amount: TEN.toString() },
                     { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
-                    { feeAddresses: feeAddresses, feeAmounts: feeAmount },
+                    feeAddresses,
+                    feeAmount,
                     signature,
                     { from: user2 }
                 ),
@@ -630,7 +645,8 @@ contract(
                     [ user1, user2 ],
                     { tokenAddress: ERC1155MainInst.address, id: ONE.toString(), amount: TEN.toString() },
                     { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
-                    { feeAddresses: feeAddresses, feeAmounts: feeAmount },
+                    feeAddresses,
+                    feeAmount,
                     signature,
                     { from: user2 }
                 ),
@@ -642,7 +658,8 @@ contract(
                     [ user1, user2 ],
                     { tokenAddress: ERC1155MainInst.address, id: ZERO, amount: ONE.toString() },
                     { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
-                    { feeAddresses: feeAddresses, feeAmounts: feeAmount },
+                    feeAddresses,
+                    feeAmount,
                     signature,
                     { from: user2 }
                 ),
@@ -654,7 +671,8 @@ contract(
                     [ user1, user2 ],
                     { tokenAddress: ERC1155MainInst.address, id: ZERO, amount: TEN.toString() },
                     { tokenAddress: ZERO_ADDRESS, id: ZERO, amount: ONE_TOKEN.toString() },
-                    { feeAddresses: feeAddresses, feeAmounts: feeAmount },
+                    feeAddresses,
+                    feeAmount,
                     signature,
                     { from: user2 }
                 ),
@@ -666,7 +684,8 @@ contract(
                     [ user1, user2 ],
                     { tokenAddress: ERC1155MainInst.address, id: ZERO, amount: TEN.toString() },
                     { tokenAddress: ERC20TestInst.address, id: ONE.toString(), amount: ONE_TOKEN.toString() },
-                    { feeAddresses: feeAddresses, feeAmounts: feeAmount },
+                    feeAddresses,
+                    feeAmount,
                     signature,
                     { from: user2 }
                 ),
@@ -678,7 +697,8 @@ contract(
                     [ user1, user2 ],
                     { tokenAddress: ERC1155MainInst.address, id: ZERO, amount: TEN.toString() },
                     { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.div(TWO).toString() },
-                    { feeAddresses: feeAddresses, feeAmounts: feeAmount },
+                    feeAddresses,
+                    feeAmount,
                     signature,
                     { from: user2 }
                 ),
@@ -692,7 +712,8 @@ contract(
                     [ user1, user2 ],
                     { tokenAddress: ERC1155MainInst.address, id: ZERO, amount: TEN.toString() },
                     { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.div(TWO).toString() },
-                    { feeAddresses: feeAddresses, feeAmounts: feeAmount },
+                    feeAddresses,
+                    feeAmount,
                     signature,
                     { from: user2 }
                 ),
@@ -707,21 +728,23 @@ contract(
                     [ user1, user2 ],
                     { tokenAddress: ERC1155MainInst.address, id: ZERO, amount: TEN.toString() },
                     { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.div(TWO).toString() },
-                    { feeAddresses: feeAddresses, feeAmounts: feeAmount },
+                    feeAddresses,
+                    feeAmount,
                     signature,
                     { from: user2 }
                 ),
                 "Exchange: Signer should sign transaction"
             );
             feeAmount[0] = oldValue;
-            
+
             await expectRevert(
             	ExchangeInst.makeExchangeERC1155(
                 	orderId,
                 	[ user1, user3 ],
                 	{ tokenAddress: ERC1155MainInst.address, id: ZERO, amount: TEN.toString() },
                 	{ tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
-                	{ feeAddresses: feeAddresses, feeAmounts: feeAmount },
+                	feeAddresses,
+                    feeAmount,
                 	signature,
                 	{ from: user2 }
             	),
@@ -738,7 +761,8 @@ contract(
                 [ user1, user2 ],
                 { tokenAddress: ERC1155MainInst.address, id: ZERO, amount: TEN.toString() },
                 { tokenAddress: ERC20TestInst.address, id: ZERO, amount: ONE_TOKEN.toString() },
-                { feeAddresses: feeAddresses, feeAmounts: feeAmount },
+                feeAddresses,
+                feeAmount,
                 signature,
                 { from: user2 }
             );
