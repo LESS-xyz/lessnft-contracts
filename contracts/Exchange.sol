@@ -32,17 +32,32 @@ contract Exchange is
         address seller,
         address buyer,
         NftTokenInfo sellToken,
-        NftTokenInfo buyToken,
-        address[] feeAddresses,
-        uint256[] feeAmounts
+        NftTokenInfo buyToken
     );
-    event ExchangeMadeErc1155(
+
+    event FeePayedErc721(
         address seller,
         address buyer,
         NftTokenInfo sellToken,
         NftTokenInfo buyToken,
-        address[] feeAddresses,
-        uint256[] feeAmounts
+        address feeAddress,
+        uint256 feeAmount
+    );
+
+    event ExchangeMadeErc1155(
+        address seller,
+        address buyer,
+        NftTokenInfo sellToken,
+        NftTokenInfo buyToken
+    );
+
+    event FeePayedErc1155(
+        address seller,
+        address buyer,
+        NftTokenInfo sellToken,
+        NftTokenInfo buyToken,
+        address feeAddress,
+        uint256 feeAmount
     );
 
     constructor() {
@@ -106,10 +121,19 @@ contract Exchange is
             SellerBuyer[0],
             SellerBuyer[1],
             tokenToBuy,
-            tokenToSell,
-            feeAddresses,
-            feeAmounts
+            tokenToSell
         );
+
+        for (uint256 i = 0; i < feeAddresses.length; i++) {
+            emit FeePayedErc721(
+                SellerBuyer[0],
+                SellerBuyer[1],
+                tokenToBuy,
+                tokenToSell,
+                feeAddresses[i],
+                feeAmounts[i]
+            );
+        }
     }
 
     function makeExchangeERC1155(
@@ -171,10 +195,19 @@ contract Exchange is
             SellerBuyer[0],
             SellerBuyer[1],
             tokenToBuy,
-            tokenToSell,
-            feeAddresses,
-            feeAmounts
+            tokenToSell
         );
+
+        for (uint256 i = 0; i < feeAddresses.length; i++) {
+            emit FeePayedErc1155(
+                SellerBuyer[0],
+                SellerBuyer[1],
+                tokenToBuy,
+                tokenToSell,
+                feeAddresses[i],
+                feeAmounts[i]
+            );
+        }
     }
 
     function _verifySigner(
