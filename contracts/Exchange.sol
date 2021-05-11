@@ -31,16 +31,24 @@ contract Exchange is
     event ExchangeMadeErc721(
         address seller,
         address buyer,
-        NftTokenInfo sellToken,
-        NftTokenInfo buyToken,
+        address sellTokenAddress,
+        uint256 sellId,
+        uint256 sellAmount,
+        address buyTokenAddress,
+        uint256 buyId,
+        uint256 buyAmount,
         address[] feeAddresses,
         uint256[] feeAmounts
     );
     event ExchangeMadeErc1155(
         address seller,
         address buyer,
-        NftTokenInfo sellToken,
-        NftTokenInfo buyToken,
+        address sellTokenAddress,
+        uint256 sellId,
+        uint256 sellAmount,
+        address buyTokenAddress,
+        uint256 buyId,
+        uint256 buyAmount,
         address[] feeAddresses,
         uint256[] feeAmounts
     );
@@ -105,8 +113,12 @@ contract Exchange is
         emit ExchangeMadeErc721(
             SellerBuyer[0],
             SellerBuyer[1],
-            tokenToBuy,
-            tokenToSell,
+            tokenToBuy.tokenAddress,
+            tokenToBuy.id,
+            tokenToBuy.amount,
+            tokenToSell.tokenAddress,
+            tokenToSell.id,
+            tokenToSell.amount,
             feeAddresses,
             feeAmounts
         );
@@ -170,8 +182,12 @@ contract Exchange is
         emit ExchangeMadeErc1155(
             SellerBuyer[0],
             SellerBuyer[1],
-            tokenToBuy,
-            tokenToSell,
+            tokenToBuy.tokenAddress,
+            tokenToBuy.id,
+            tokenToBuy.amount,
+            tokenToSell.tokenAddress,
+            tokenToSell.id,
+            tokenToSell.amount,
             feeAddresses,
             feeAmounts
         );
