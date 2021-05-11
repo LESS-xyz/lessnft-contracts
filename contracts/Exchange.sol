@@ -31,33 +31,26 @@ contract Exchange is
     event ExchangeMadeErc721(
         address seller,
         address buyer,
-        NftTokenInfo sellToken,
-        NftTokenInfo buyToken
+        address sellTokenAddress,
+        uint256 sellId,
+        uint256 sellAmount,
+        address buyTokenAddress,
+        uint256 buyId,
+        uint256 buyAmount,
+        address[] feeAddresses,
+        uint256[] feeAmounts
     );
-
-    event FeePayedErc721(
-        address seller,
-        address buyer,
-        NftTokenInfo sellToken,
-        NftTokenInfo buyToken,
-        address feeAddress,
-        uint256 feeAmount
-    );
-
     event ExchangeMadeErc1155(
         address seller,
         address buyer,
-        NftTokenInfo sellToken,
-        NftTokenInfo buyToken
-    );
-
-    event FeePayedErc1155(
-        address seller,
-        address buyer,
-        NftTokenInfo sellToken,
-        NftTokenInfo buyToken,
-        address feeAddress,
-        uint256 feeAmount
+        address sellTokenAddress,
+        uint256 sellId,
+        uint256 sellAmount,
+        address buyTokenAddress,
+        uint256 buyId,
+        uint256 buyAmount,
+        address[] feeAddresses,
+        uint256[] feeAmounts
     );
 
     constructor() {
@@ -120,20 +113,15 @@ contract Exchange is
         emit ExchangeMadeErc721(
             SellerBuyer[0],
             SellerBuyer[1],
-            tokenToBuy,
-            tokenToSell
+            tokenToBuy.tokenAddress,
+            tokenToBuy.id,
+            tokenToBuy.amount,
+            tokenToSell.tokenAddress,
+            tokenToSell.id,
+            tokenToSell.amount,
+            feeAddresses,
+            feeAmounts
         );
-
-        for (uint256 i = 0; i < feeAddresses.length; i++) {
-            emit FeePayedErc721(
-                SellerBuyer[0],
-                SellerBuyer[1],
-                tokenToBuy,
-                tokenToSell,
-                feeAddresses[i],
-                feeAmounts[i]
-            );
-        }
     }
 
     function makeExchangeERC1155(
@@ -194,20 +182,15 @@ contract Exchange is
         emit ExchangeMadeErc1155(
             SellerBuyer[0],
             SellerBuyer[1],
-            tokenToBuy,
-            tokenToSell
+            tokenToBuy.tokenAddress,
+            tokenToBuy.id,
+            tokenToBuy.amount,
+            tokenToSell.tokenAddress,
+            tokenToSell.id,
+            tokenToSell.amount,
+            feeAddresses,
+            feeAmounts
         );
-
-        for (uint256 i = 0; i < feeAddresses.length; i++) {
-            emit FeePayedErc1155(
-                SellerBuyer[0],
-                SellerBuyer[1],
-                tokenToBuy,
-                tokenToSell,
-                feeAddresses[i],
-                feeAmounts[i]
-            );
-        }
     }
 
     function _verifySigner(
