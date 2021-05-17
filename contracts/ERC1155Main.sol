@@ -6,14 +6,16 @@ import "openzeppelin-solidity/contracts/token/ERC1155/extensions/ERC1155Burnable
 import "openzeppelin-solidity/contracts/access/AccessControl.sol";
 import "openzeppelin-solidity/contracts/utils/cryptography/ECDSA.sol";
 import "./exchange-provider/IExchangeProvider.sol";
+import "./ERC1155URIStorage.sol";
 
-contract ERC1155Main is ERC1155Burnable, AccessControl {
+contract ERC1155Main is ERC1155Burnable, ERC1155URIStorage, AccessControl {
     bytes32 public SIGNER_ROLE = keccak256("SIGNER_ROLE");
 
     address public factory;
 
-    constructor(string memory uri_, address signer) ERC1155(uri_) {
+    constructor(string memory _baseUri, address signer) ERC1155("") {
         factory = _msgSender();
+        _setBaseUri(_baseUri);
         _setupRole(DEFAULT_ADMIN_ROLE, signer);
         _setupRole(SIGNER_ROLE, signer);
     }
@@ -21,22 +23,28 @@ contract ERC1155Main is ERC1155Burnable, AccessControl {
     function mint(
         uint256 id,
         uint256 amount,
+        string calldata _tokenURI,
         bytes calldata signature
     ) external {
         _verifySigner(id, amount, signature);
         _mint(_msgSender(), id, amount, "");
         setApprovalForAll(IExchangeProvider(factory).exchange(), true);
+        _markTokenId(id);
+        _setTokenURI(id,_tokenURI);
     }
 
     function mint(
         uint256 id,
         uint256 amount,
+        string calldata _tokenURI,
         bytes memory data,
         bytes calldata signature
     ) external {
         _verifySigner(id, amount, signature);
         _mint(_msgSender(), id, amount, data);
         setApprovalForAll(IExchangeProvider(factory).exchange(), true);
+        _markTokenId(id);
+        _setTokenURI(id,_tokenURI);
     }
 
     function supportsInterface(bytes4 interfaceId)
@@ -49,6 +57,16 @@ contract ERC1155Main is ERC1155Burnable, AccessControl {
         return
             ERC1155.supportsInterface(interfaceId) ||
             AccessControl.supportsInterface(interfaceId);
+    }
+
+    function tokenURI(uint256 tokenId)
+        public
+        view
+        virtual
+        override(ERC1155URIStorage)
+        returns (string memory)
+    {
+        return ERC1155URIStorage.tokenURI(tokenId);
     }
 
     function _verifySigner(
