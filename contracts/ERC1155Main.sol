@@ -10,8 +10,10 @@ import "./ERC1155URIStorage.sol";
 
 contract ERC1155Main is ERC1155Burnable, ERC1155URIStorage, AccessControl {
     bytes32 public SIGNER_ROLE = keccak256("SIGNER_ROLE");
-
     address public factory;
+
+    uint256 private _lastMintedId; 
+    mapping(string => bool) hasTokenWithURI;
 
     constructor(string memory _baseUri, address signer) ERC1155("") {
         factory = _msgSender();
@@ -21,29 +23,35 @@ contract ERC1155Main is ERC1155Burnable, ERC1155URIStorage, AccessControl {
     }
 
     function mint(
-        uint256 id,
         uint256 amount,
         string calldata _tokenURI,
         bytes calldata signature
     ) external {
-        _verifySigner(id, amount, signature);
+        _verifySigner(_tokenURI, amount, signature);
+        require(!hasTokenWithURI[_tokenURI], "ERC1155Main: URI already exists");
+
+        uint256 id = _lastMintedId++;
         _mint(_msgSender(), id, amount, "");
         setApprovalForAll(IExchangeProvider(factory).exchange(), true);
         _markTokenId(id);
-        _setTokenURI(id,_tokenURI);
+        hasTokenWithURI[_tokenURI] = true;
+        _setTokenURI(id, _tokenURI);
     }
 
     function mint(
-        uint256 id,
         uint256 amount,
         string calldata _tokenURI,
         bytes memory data,
         bytes calldata signature
     ) external {
-        _verifySigner(id, amount, signature);
+        _verifySigner(_tokenURI, amount, signature);
+        require(!hasTokenWithURI[_tokenURI], "ERC1155Main: URI already exists");
+
+        uint256 id = _lastMintedId++;
         _mint(_msgSender(), id, amount, data);
         setApprovalForAll(IExchangeProvider(factory).exchange(), true);
         _markTokenId(id);
+        hasTokenWithURI[_tokenURI] = true;
         _setTokenURI(id,_tokenURI);
     }
 
@@ -70,13 +78,13 @@ contract ERC1155Main is ERC1155Burnable, ERC1155URIStorage, AccessControl {
     }
 
     function _verifySigner(
-        uint256 id,
+        string calldata _tokenURI,
         uint256 amount,
         bytes calldata signature
     ) private view {
         address signer =
             ECDSA.recover(
-                keccak256(abi.encodePacked(this, id, amount)),
+                keccak256(abi.encodePacked(this, _tokenURI, amount)),
                 signature
             );
         require(

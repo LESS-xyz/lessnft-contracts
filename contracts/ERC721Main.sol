@@ -21,6 +21,9 @@ contract ERC721Main is
 
     address public factory;
 
+    uint256 private _lastMintedId; 
+    mapping(string => bool) private hasTokenWithURI;
+
     constructor(
         string memory _name,
         string memory _symbol,
@@ -47,6 +50,7 @@ contract ERC721Main is
         virtual
         override(ERC721, ERC721URIStorage)
     {
+        hasTokenWithURI[tokenURI(tokenId)] = false;
         ERC721URIStorage._burn(tokenId);
     }
 
@@ -74,12 +78,16 @@ contract ERC721Main is
     }
 
     function mint(
-        uint256 tokenId,
         string calldata _tokenURI,
         bytes calldata signature
     ) external {
-        _verifySigner(tokenId, signature);
+        _verifySigner(_tokenURI, signature);
+        require(!hasTokenWithURI[_tokenURI], "ERC721Main: URI already exists");
+
+        uint256 tokenId = _lastMintedId++;
         _safeMint(_msgSender(), tokenId);
+        
+        hasTokenWithURI[_tokenURI] = true;
         _setTokenURI(tokenId, _tokenURI);
         setApprovalForAll(IExchangeProvider(factory).exchange(), true);
     }
@@ -88,9 +96,9 @@ contract ERC721Main is
         return baseURI;
     }
 
-    function _verifySigner(uint256 id, bytes calldata signature) private view {
+    function _verifySigner(string calldata _tokenURI, bytes calldata signature) private view {
         address signer =
-            ECDSA.recover(keccak256(abi.encodePacked(this, id)), signature);
+            ECDSA.recover(keccak256(abi.encodePacked(this, _tokenURI)), signature);
         require(
             hasRole(SIGNER_ROLE, signer),
             "ERC721Main: Signer should sign transaction"

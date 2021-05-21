@@ -29,29 +29,29 @@ module.exports = {
         ropsten: {
             provider: () => new HDWalletProvider(MNEMONIC, "https://ropsten.infura.io/v3/" + INFURA_ID_PROJECT),
             network_id: 3,
-            gas: DEPLOY_GAS_LIMIT,
+            gas: DEPLOY_GAS_LIMIT || '150',
             confirmations: 2,
             skipDryRun: true
         },
         mainnet: {
             provider: () => new HDWalletProvider(MNEMONIC, "https://mainnet.infura.io/v3/" + INFURA_ID_PROJECT),
             network_id: 1,
-            gasPrice: web3.utils.toWei(DEPLOY_GAS_PRICE, 'gwei'),
-            gas: DEPLOY_GAS_LIMIT,
+            gasPrice: web3.utils.toWei(DEPLOY_GAS_PRICE || '7000000', 'gwei'),
+            gas: DEPLOY_GAS_LIMIT || '150',
             skipDryRun: false
         },
         kovan: {
             provider: () => new HDWalletProvider(MNEMONIC, "https://kovan.infura.io/v3/" + INFURA_ID_PROJECT),
             network_id: 42,
             confirmations: 1,
-            gas: DEPLOY_GAS_LIMIT,
+            gas: DEPLOY_GAS_LIMIT || '7000000',
             skipDryRun: true
         },
         rinkeby: {
             provider: () => new HDWalletProvider(MNEMONIC, "https://rinkeby.infura.io/v3/" + INFURA_ID_PROJECT),
             network_id: 4,
             confirmations: 2,
-            gas: DEPLOY_GAS_LIMIT,
+            gas: DEPLOY_GAS_LIMIT || '7000000',
             skipDryRun: true
         },
         bscTestnet: {

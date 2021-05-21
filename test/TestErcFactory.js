@@ -35,6 +35,7 @@ const ONE_TOKEN = TEN.pow(DECIMALS);
 const NFT_721_NAME = "Test NFT 1";
 const NFT_721_SYMBOL = "test1";
 const NFT_721_BASE_URI = "test.com/";
+const NFT_721_BASE_URI2 = "test2.com/";
 
 const NFT_1155_NAME = "Test NFT 1155 1";
 const NFT_1155_SYMBOL = "test1 1155";
@@ -187,7 +188,6 @@ contract(
             assert(ERC1155MainInst != ZERO_ADDRESS);
             ERC1155MainInst = await ERC1155Main.at(ERC1155MainInst);
 
-            expect(await ERC1155MainInst.uri(ZERO)).to.be.equals(NFT_1155_BASE_URI);
             expect(await ERC1155MainInst.factory()).to.be.equals(FactoryErc1155Inst.address);
 
             expect(await ERC1155MainInst.SIGNER_ROLE()).to.be.equals(SIGNER_ROLE);
@@ -217,15 +217,21 @@ contract(
 
             message = EthCrypto.hash.keccak256([
                 { type: "address", value: ERC721MainInst.address },
-                { type: "uint256", value: ZERO.toString() }
+                { type: "string", value: NFT_721_BASE_URI.toString() }
             ]);
             signature = EthCrypto.sign(Nft721Signer.privateKey, message);
 
             await expectRevert(
-                ERC721MainInst.mint(ONE, NFT_721_BASE_URI, signature, { from: user1 }),
+                ERC721MainInst.mint(NFT_721_BASE_URI2, signature, { from: user1 }),
                 "ERC721Main: Signer should sign transaction"
             );
-            await ERC721MainInst.mint(ZERO, NFT_721_BASE_URI, signature, { from: user1 });
+            await ERC721MainInst.mint(NFT_721_BASE_URI, signature, { from: user1 });
+
+            await expectRevert(
+                 ERC721MainInst.mint(NFT_721_BASE_URI, signature, { from: user1 }),
+                "ERC721Main: URI already exists"
+            );
+
 
             expect(await ERC721MainInst.balanceOf(user1)).to.be.bignumber.that.equals(ONE);
             expect(await ERC721MainInst.ownerOf(ZERO)).to.be.equals(user1);
@@ -234,12 +240,12 @@ contract(
             let fakeSigner = EthCrypto.createIdentity();
             message = EthCrypto.hash.keccak256([
                 { type: "address", value: ERC721MainInst.address },
-                { type: "uint256", value: ONE.toString() }
+                { type: "string", value: NFT_721_BASE_URI2 }
             ]);
             signature = EthCrypto.sign(fakeSigner.privateKey, message);
 
             await expectRevert(
-                ERC721MainInst.mint(ONE, NFT_721_BASE_URI, signature, { from: user1 }),
+                ERC721MainInst.mint(NFT_721_BASE_URI2, signature, { from: user1 }),
                 "ERC721Main: Signer should sign transaction"
             );
         })
@@ -272,20 +278,24 @@ contract(
 
             message = EthCrypto.hash.keccak256([
                 { type: "address", value: ERC1155MainInst.address },
-                { type: "uint256", value: ZERO.toString() },
+                { type: "string", value: NFT_721_BASE_URI },
                 { type: "uint256", value: TEN.toString() }
             ]);
             signature = EthCrypto.sign(Nft1155Signer.privateKey, message);
 
             await expectRevert(
-                ERC1155MainInst.mint(ONE, TEN, signature, { from: user1 }),
+                ERC1155MainInst.mint(TEN, NFT_721_BASE_URI2, signature, { from: user1 }),
                 "ERC1155Main: Signer should sign transaction"
             );
             await expectRevert(
-                ERC1155MainInst.mint(ZERO, ONE, signature, { from: user1 }),
+                ERC1155MainInst.mint(ONE, NFT_721_BASE_URI, signature, { from: user1 }),
                 "ERC1155Main: Signer should sign transaction"
             );
-            await ERC1155MainInst.mint(ZERO, TEN, signature, { from: user1 });
+            await ERC1155MainInst.mint(TEN, NFT_721_BASE_URI, signature, { from: user1 });
+            await expectRevert(
+                ERC1155MainInst.mint(TEN, NFT_721_BASE_URI, signature, { from: user1 }),
+                "ERC1155Main: URI already exists"
+            );
 
             expect(await ERC1155MainInst.balanceOf(user1, ZERO)).to.be.bignumber.that.equals(TEN);
             assert(await ERC1155MainInst.isApprovedForAll(user1, ExchangeInst.address)); // token approved to exchange by default
@@ -294,13 +304,13 @@ contract(
             let fakeSigner = EthCrypto.createIdentity();
             message = EthCrypto.hash.keccak256([
                 { type: "address", value: ERC1155MainInst.address },
-                { type: "uint256", value: ONE.toString() },
+                { type: "string", value: NFT_721_BASE_URI2 },
                 { type: "uint256", value: TEN.toString() }
             ]);
             signature = EthCrypto.sign(fakeSigner.privateKey, message);
 
             await expectRevert(
-                ERC1155MainInst.mint(ONE, TEN, signature, { from: user1 }),
+                ERC1155MainInst.mint(TEN, NFT_721_BASE_URI, signature, { from: user1 }),
                 "ERC1155Main: Signer should sign transaction"
             );
         })
@@ -333,10 +343,10 @@ contract(
             // mint token for user1
             message = EthCrypto.hash.keccak256([
                 { type: "address", value: ERC721MainInst.address },
-                { type: "uint256", value: ZERO.toString() }
+                { type: "string", value: NFT_721_BASE_URI }
             ]);
             signature = EthCrypto.sign(Nft721Signer.privateKey, message);
-            await ERC721MainInst.mint(ZERO, NFT_721_BASE_URI, signature, { from: user1 });
+            await ERC721MainInst.mint(NFT_721_BASE_URI, signature, { from: user1 });
 
             await ERC721MainInst.approve(ExchangeInst.address, ZERO, { from: user1 });
             await ERC20TestInst.approve(ExchangeInst.address, ONE_TOKEN, { from: user2 });
@@ -569,11 +579,11 @@ contract(
             // mint token for user1
             message = EthCrypto.hash.keccak256([
                 { type: "address", value: ERC1155MainInst.address },
-                { type: "uint256", value: ZERO.toString() },
+                { type: "string", value: NFT_721_BASE_URI },
                 { type: "uint256", value: TEN.toString() }
             ]);
             signature = EthCrypto.sign(Nft1155Signer.privateKey, message);
-            await ERC1155MainInst.mint(ZERO, TEN, signature, { from: user1 });
+            await ERC1155MainInst.mint(TEN, NFT_721_BASE_URI, signature, { from: user1 });
 
             await ERC1155MainInst.setApprovalForAll(ExchangeInst.address, true, { from: user1 });
             await ERC20TestInst.approve(ExchangeInst.address, ONE_TOKEN, { from: user2 });
