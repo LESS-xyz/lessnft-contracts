@@ -94,4 +94,14 @@ contract ERC1155Main is ERC1155Burnable, ERC1155URIStorage, AccessControl {
             "ERC1155Main: Signer should sign transaction"
         );
     }
+
+    function uri(uint256 tokenId)
+        public
+        view
+        virtual
+        override
+        returns (string memory)
+    {
+        return ERC1155URIStorage.tokenURI(tokenId);
+    }
 }
