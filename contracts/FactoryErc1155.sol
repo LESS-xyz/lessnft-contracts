@@ -22,10 +22,11 @@ contract FactoryErc1155 is AccessControl, ExchangeProvider {
     function makeERC1155(
         string memory uri,
         address signer,
+        string memory name,
         bytes calldata signature
     ) external {
         _verifySigner(signer, signature);
-        ERC1155Main newAddress = new ERC1155Main(uri, signer);
+        ERC1155Main newAddress = new ERC1155Main(uri, signer, name);
 
         emit ERC1155Made(address(newAddress), signer);
     }

@@ -11,12 +11,14 @@ import "./ERC1155URIStorage.sol";
 contract ERC1155Main is ERC1155Burnable, ERC1155URIStorage, AccessControl {
     bytes32 public SIGNER_ROLE = keccak256("SIGNER_ROLE");
     address public factory;
+    string public name;
 
     uint256 private _lastMintedId; 
     mapping(string => bool) hasTokenWithURI;
 
-    constructor(string memory _baseUri, address signer) ERC1155("") {
+    constructor(string memory _baseUri, address signer, string memory _name) ERC1155("") {
         factory = _msgSender();
+        name = _name;
         _setBaseUri(_baseUri);
         _setupRole(DEFAULT_ADMIN_ROLE, signer);
         _setupRole(SIGNER_ROLE, signer);
