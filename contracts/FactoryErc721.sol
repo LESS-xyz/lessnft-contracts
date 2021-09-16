@@ -10,6 +10,7 @@ import "./exchange-provider/ExchangeProvider.sol";
 
 contract FactoryErc721 is AccessControl, ExchangeProvider {
     bytes32 public SIGNER_ROLE = keccak256("SIGNER_ROLE");
+    string private CONTRACT_URI;
 
     event ERC721Made(
         address newToken,
@@ -18,10 +19,11 @@ contract FactoryErc721 is AccessControl, ExchangeProvider {
         address indexed signer
     );
 
-    constructor(address _exchange) {
+    constructor(address _exchange, string memory _CONTRACT_URI) {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(SIGNER_ROLE, _msgSender());
         exchange = _exchange;
+        CONTRACT_URI = _CONTRACT_URI;
     }
 
     function makeERC721(
@@ -32,7 +34,7 @@ contract FactoryErc721 is AccessControl, ExchangeProvider {
         bytes memory signature
     ) external {
         _verifySigner(signer, signature);
-        ERC721Main newAddress = new ERC721Main(name, symbol, baseURI, signer);
+        ERC721Main newAddress = new ERC721Main(name, symbol, baseURI, CONTRACT_URI, signer);
 
         emit ERC721Made(address(newAddress), name, symbol, signer);
     }

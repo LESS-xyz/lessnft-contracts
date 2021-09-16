@@ -16,12 +16,20 @@ contract ERC1155Main is ERC1155Burnable, ERC1155URIStorage, AccessControl {
     uint256 private _lastMintedId; 
     mapping(string => bool) hasTokenWithURI;
 
-    constructor(string memory _baseUri, address signer, string memory _name) ERC1155("") {
+    string private CONTRACT_URI;
+    bytes16 private constant _HEX_SYMBOLS = "0123456789abcdef";
+
+    constructor(string memory _name, string memory _baseUri, string memory _CONTRACT_URI, address signer) ERC1155("") {
         factory = _msgSender();
         name = _name;
         _setBaseUri(_baseUri);
         _setupRole(DEFAULT_ADMIN_ROLE, signer);
         _setupRole(SIGNER_ROLE, signer);
+        CONTRACT_URI = _CONTRACT_URI;
+    }
+
+    function contractURI() external view returns (string memory) {
+        return string(abi.encodePacked(CONTRACT_URI, _toString(uint256(uint160(address(this)))), "/"));
     }
 
     function mint(
@@ -79,6 +87,27 @@ contract ERC1155Main is ERC1155Burnable, ERC1155URIStorage, AccessControl {
         return ERC1155URIStorage.tokenURI(tokenId);
     }
 
+    function uri(uint256 tokenId)
+        public
+        view
+        virtual
+        override
+        returns (string memory)
+    {
+        return ERC1155URIStorage.tokenURI(tokenId);
+    }
+
+    function _toString(uint256 value) private pure returns (string memory) {
+        bytes memory buffer = new bytes(42);
+        buffer[0] = "0";
+        buffer[1] = "x";
+        for (uint256 i = 41; i > 1; i--) {
+            buffer[i] = _HEX_SYMBOLS[value & 0xf];
+            value >>= 4;
+        }
+        return string(buffer);
+    }
+
     function _verifySigner(
         string calldata _tokenURI,
         uint256 amount,
@@ -93,15 +122,5 @@ contract ERC1155Main is ERC1155Burnable, ERC1155URIStorage, AccessControl {
             hasRole(SIGNER_ROLE, signer),
             "ERC1155Main: Signer should sign transaction"
         );
-    }
-
-    function uri(uint256 tokenId)
-        public
-        view
-        virtual
-        override
-        returns (string memory)
-    {
-        return ERC1155URIStorage.tokenURI(tokenId);
     }
 }

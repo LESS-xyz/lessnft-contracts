@@ -2,7 +2,8 @@ const BN = require('bn.js');
 
 require('dotenv').config();
 const {
-    DDS_BACKEND
+    DDS_BACKEND,
+    CONTRACT_URI
 } = process.env;
 
 const Exchange = artifacts.require("Exchange");
@@ -25,7 +26,8 @@ module.exports = async function (deployer, network) {
 
     await deployer.deploy(
         FactoryErc1155,
-        ExchangeInst.address
+        ExchangeInst.address,
+        CONTRACT_URI
     );
     let FactoryErc1155Inst = await FactoryErc1155.deployed();
     await FactoryErc1155Inst.grantRole(await FactoryErc1155Inst.SIGNER_ROLE(), DDS_BACKEND);
