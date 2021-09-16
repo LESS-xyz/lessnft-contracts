@@ -5,3 +5,4 @@ output.sol
 bin/
 test.json
 gasEstimation.txt
+package-lock.json
